@@ -51,13 +51,13 @@ Pro nonlinear retouch workflow preview, not available for download yet.
 
 ### 生图模型 / Image Models
 
-- claude Imagine-2
-- Nano Banana 全系列 / Nano Banana full series
+- Gpt Imagine-2
+- Nano Banana 全系列 
 
 ### 文字模型 / Text Models
 
 - Gemini 全系列 / Gemini full series
-- claude 全系列 / claude full series
+- GPT 全系列 / GPT full series
 
 ## 下载 / Download
 
