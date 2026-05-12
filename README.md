@@ -5,7 +5,7 @@
 
 ## 官网 / Website
 
-- 官网 / Website: https://gqetugts-boop.github.io/ZHUANG-AI/
+- 官网 / Website: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/
 - GitHub: https://github.com/gqetugts-boop/ZHUANG-AI-Retouch
 - 插件交流群 / QQ Group: `1103212650`
 - 作者 / Author: 庄泽 / 零柒zero
@@ -65,7 +65,7 @@ Pro nonlinear retouch workflow preview, not available for download yet.
 
 Download from the website:
 
-https://gqetugts-boop.github.io/ZHUANG-AI/
+https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/
 
 仓库内也包含发布包：
 
@@ -108,7 +108,7 @@ The release package is also included in this repository:
 
 ## 使用教程 / Tutorial
 
-- 官网教程 / Website tutorial: https://gqetugts-boop.github.io/ZHUANG-AI/tutorial.html
+- 官网教程 / Website tutorial: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/tutorial.html
 - 本地教程 / Local tutorial: `ZHUANG-AI 1.3.5/使用教程.html`
 
 ## 版本 / Version
