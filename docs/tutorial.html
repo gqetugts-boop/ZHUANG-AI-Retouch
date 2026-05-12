@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZHUANG-AI 1.3.5 使用教程</title>
+  <style>
+    :root {
+      --bg: #080b10;
+      --card: #151b26;
+      --soft: #1a2230;
+      --text: #eef4ff;
+      --muted: rgba(238,244,255,.62);
+      --accent: #4d9eff;
+      --line: rgba(120,160,220,.18);
+      --danger: #ff6b7a;
+      --ok: #64d98a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: radial-gradient(circle at 20% 0%, rgba(77,158,255,.14), transparent 34%), var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .hero, .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(26,34,48,.96), rgba(18,24,34,.96));
+      box-shadow: 0 12px 36px rgba(0,0,0,.28);
+    }
+    .hero { padding: 28px; margin-bottom: 18px; }
+    .card { padding: 22px; margin: 16px 0; }
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.25; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 22px; border-left: 4px solid var(--accent); padding-left: 10px; }
+    h3 { font-size: 18px; color: var(--accent); }
+    p { margin: 8px 0; color: var(--muted); }
+    ol, ul { margin: 8px 0 0; padding-left: 24px; }
+    li { margin: 8px 0; }
+    code {
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #090d13;
+      color: #cfe5ff;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: 1px solid rgba(77,158,255,.32);
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(77,158,255,.10);
+      font-weight: 800;
+    }
+    .step {
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(9,13,19,.55);
+    }
+    .warn { color: var(--danger); font-weight: 800; }
+    .ok { color: var(--ok); font-weight: 800; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .small { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>ZHUANG-AI 修图插件 1.3.5 使用教程</h1>
+      <p>这是一份尽量简单的教程。照着做，就能把插件装进 Photoshop，并完成读取选区、添加参考图、生成图片、对话和 WebUI 使用。</p>
+      <div class="badge">版本：1.3.5 正式版</div>
+    </div>
+
+    <div class="card">
+      <h2>一、这个文件夹里哪些东西不能删？</h2>
+      <p>安装插件时，整个 <code>ZHUANG-AI 1.3.5</code> 文件夹都要保留。里面至少要有这些文件：</p>
+      <ul>
+        <li><code>manifest.json</code>：插件说明文件，Photoshop 靠它识别插件。</li>
+        <li><code>index.html</code>：插件界面。</li>
+        <li><code>index.js</code>：插件功能代码。</li>
+        <li><code>yushe.json</code>：提示词预设。</li>
+        <li><code>icons</code> 文件夹：插件图标。</li>
+      </ul>
+      <p class="warn">不要只复制一个 index.html，也不要改文件名。</p>
+    </div>
+
+    <div class="card">
+      <h2>二、安装到 Photoshop</h2>
+      <div class="step">
+        <h3>方法 1：放到 Photoshop 插件目录</h3>
+        <ol>
+          <li>退出 Photoshop。</li>
+          <li>把整个 <code>ZHUANG-AI 1.3.5</code> 文件夹复制到 Photoshop 的 <code>Plug-ins</code> 插件目录。</li>
+          <li>重新打开 Photoshop。</li>
+          <li>在顶部菜单里找 <code>插件 / Plugins</code>，打开 <code>ZHUANG-AI 修图插件</code>。</li>
+        </ol>
+      </div>
+      <div class="step">
+        <h3>方法 2：如果你使用 UXP Developer Tool</h3>
+        <ol>
+          <li>打开 UXP Developer Tool。</li>
+          <li>点击 Add Plugin。</li>
+          <li>选择本文件夹里的 <code>manifest.json</code>。</li>
+          <li>点击 Load 或 Reload。</li>
+          <li>回到 Photoshop 打开插件面板。</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>三、第一次使用前先设置 API</h2>
+      <ol>
+        <li>打开插件后，点击顶部的 <code>设置</code>。</li>
+        <li>找到 <code>GRS API 密钥</code>，填入你的 GRS key。</li>
+        <li>如果你用 SD WebUI，也填好 <code>SD WebUI API 地址</code>，一般是 <code>http://localhost:7860</code>。</li>
+        <li>点击 <code>保存全部设置</code>。</li>
+      </ol>
+      <p class="warn">没有 API 密钥时，生图和对话功能会失败。</p>
+    </div>
+
+    <div class="card">
+      <h2>四、最常用：框选区域后生成图像</h2>
+      <ol>
+        <li>在 Photoshop 打开一张图片。</li>
+        <li>用矩形选框工具框住你想修的区域。</li>
+        <li>回到插件，进入 <code>生图</code> 页面。</li>
+        <li>点击 <code>读取选区</code>，看到预览图就说明读取成功。</li>
+        <li>选择生图模型、图片大小、生成数量。</li>
+        <li>输入提示词，或者选择一个预设。</li>
+        <li>点击 <code>生成图像</code>。</li>
+        <li>生成成功后，图片会自动放回 Photoshop 当前文档里。</li>
+      </ol>
+      <p class="ok">普通对齐不会改变你的画布大小。</p>
+    </div>
+
+    <div class="card">
+      <h2>五、1.3.5 新功能：添加参考图</h2>
+      <p>参考图的意思是：除了主选区，还可以给 AI 几张额外图片作为风格、脸部、材质或细节参考。</p>
+      <ol>
+        <li>先框选主图区域，点击 <code>读取选区</code>。</li>
+        <li>再在 Photoshop 里框选另一个想作为参考的区域。</li>
+        <li>点击 <code>添加当前选区为参考图</code>。</li>
+        <li>参考图会显示在 <code>参考图</code> 区域，最多 4 张。</li>
+        <li>想删除某张参考图，点击缩略图右上角的删除按钮。</li>
+        <li>想重新抓取某张参考图，点击那张参考图缩略图，再用当前 Photoshop 选区替换。</li>
+      </ol>
+      <p class="ok">生成时会自动把主图 + 参考图一起发送给 GRS 图生图接口。</p>
+    </div>
+
+    <div class="card">
+      <h2>六、预设怎么用？</h2>
+      <div class="grid">
+        <div class="step">
+          <h3>使用预设</h3>
+          <ol>
+            <li>选择 <code>预设分组</code>。</li>
+            <li>选择 <code>预设选择</code>。</li>
+            <li>提示词会自动填入。</li>
+          </ol>
+        </div>
+        <div class="step">
+          <h3>保存预设</h3>
+          <ol>
+            <li>写好提示词。</li>
+            <li>输入 <code>预设名称</code>。</li>
+            <li>如果已经添加参考图，也会一起保存。</li>
+            <li>点击 <code>保存预设</code>。</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>七、批处理怎么用？</h2>
+      <ol>
+        <li>设置好提示词、模型、选区和参考图。</li>
+        <li>点击 <code>添加到批处理</code>。</li>
+        <li>可以换选区、换提示词，再继续添加任务。</li>
+        <li>进入 <code>批处理</code> 页面。</li>
+        <li>点击 <code>开始批处理</code>。</li>
+      </ol>
+      <p>1.3.5 之后，批处理任务会记住添加任务时的参考图，不会因为你后来换了参考图而丢失。</p>
+    </div>
+
+    <div class="card">
+      <h2>八、对话功能怎么用？</h2>
+      <ol>
+        <li>进入 <code>对话</code> 页面。</li>
+        <li>选择 GRS 对话模型。</li>
+        <li>输入问题，点击 <code>发送消息</code>。</li>
+        <li>如果想让 AI 看图回答，先在 Photoshop 框选区域，再点击 <code>读取选区</code>。</li>
+        <li>读取成功后再发送问题，AI 会结合图片回答。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>九、WebUI 功能怎么用？</h2>
+      <ol>
+        <li>先启动你的本地 SD WebUI。</li>
+        <li>进入插件 <code>设置</code>，确认 WebUI 地址正确。</li>
+        <li>进入 <code>WebUI</code> 页面。</li>
+        <li>点击 <code>刷新</code>，读取模型和 Lora。</li>
+        <li>填写正向、反向提示词和参数。</li>
+        <li>点击 <code>一键生成</code>。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>十、常见问题</h2>
+      <div class="step">
+        <h3>1. 插件打不开</h3>
+        <p>检查文件夹里有没有 <code>manifest.json</code>、<code>index.html</code>、<code>index.js</code>，不要把文件从文件夹里拆出来。</p>
+      </div>
+      <div class="step">
+        <h3>2. 生图失败</h3>
+        <p>先去设置检查 GRS API 密钥，再确认网络可用。</p>
+      </div>
+      <div class="step">
+        <h3>3. 读取选区失败</h3>
+        <p>确认 Photoshop 当前有打开图片，并且真的用选框工具框出了区域。</p>
+      </div>
+      <div class="step">
+        <h3>4. 回图大小不对</h3>
+        <p>默认用普通对齐。如果你想让回图严格贴合选区，去设置里把图片对齐算法改成 <code>缩放图层到选区</code>。</p>
+      </div>
+    </div>
+
+    <div class="card small">
+      <h2>版本信息</h2>
+      <p><strong>ZHUANG-AI 修图插件 1.3.5 正式版</strong></p>
+      <p>插件作者：庄泽/零柒zero。插件交流群：<strong>1103212650</strong>。插件完全免费，如果你从任何渠道付费获取，请立即举报商家。</p>
+    </div>
+  </div>
+</body>
+</html>

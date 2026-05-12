@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>庄泽 零柒zero - ZHUANG-AI</title>
+ <style>
+  :root {
+   --bg: #080b10;
+   --panel: rgba(18, 24, 34, 0.88);
+   --panel-strong: rgba(24, 32, 46, 0.96);
+   --text: #eef4ff;
+   --muted: rgba(238, 244, 255, 0.64);
+   --soft: rgba(238, 244, 255, 0.42);
+   --line: rgba(120, 160, 220, 0.18);
+   --accent: #4d9eff;
+   --accent-2: #8b6cff;
+   --ok: #64d98a;
+   --warn: #ffcc66;
+   --danger: #ff6b7a;
+   --shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+   margin: 0;
+   background:
+    radial-gradient(circle at 18% 0%, rgba(77, 158, 255, 0.18), transparent 34%),
+    radial-gradient(circle at 78% 10%, rgba(139, 108, 255, 0.16), transparent 32%),
+    linear-gradient(180deg, #080b10 0%, #0b1018 45%, #080b10 100%);
+   color: var(--text);
+   font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif;
+   line-height: 1.7;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { width: min(1160px, calc(100% - 36px)); margin: 0 auto; }
+
+  .nav {
+   position: sticky;
+   top: 0;
+   z-index: 20;
+   backdrop-filter: blur(18px);
+   background: rgba(8, 11, 16, 0.72);
+   border-bottom: 1px solid var(--line);
+  }
+
+  .nav-inner {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 18px;
+   min-height: 68px;
+  }
+
+  .brand {
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   min-width: 0;
+  }
+
+  .brand-mark {
+   width: 38px;
+   height: 38px;
+   border-radius: 14px;
+   display: grid;
+   place-items: center;
+   background: linear-gradient(135deg, var(--accent), var(--accent-2));
+   color: #fff;
+   font-weight: 900;
+   box-shadow: 0 0 28px rgba(77, 158, 255, 0.24);
+  }
+
+  .brand-title { font-weight: 900; line-height: 1.15; }
+  .brand-subtitle { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; }
+
+  .nav-links {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+   flex-wrap: wrap;
+   justify-content: flex-end;
+  }
+
+  .nav-links a {
+   padding: 8px 11px;
+   border-radius: 999px;
+   color: var(--muted);
+   font-size: 13px;
+  }
+
+  .nav-links a:hover { background: rgba(77, 158, 255, 0.12); color: var(--text); }
+
+  .hero {
+   padding: 76px 0 42px;
+  }
+
+  .hero-grid {
+   display: grid;
+   grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+   gap: 28px;
+   align-items: stretch;
+  }
+
+  .eyebrow {
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+   padding: 6px 11px;
+   border: 1px solid rgba(77, 158, 255, 0.28);
+   border-radius: 999px;
+   color: #cfe5ff;
+   background: rgba(77, 158, 255, 0.10);
+   font-size: 13px;
+   font-weight: 800;
+  }
+
+  h1 {
+   margin: 18px 0 14px;
+   font-size: clamp(42px, 8vw, 84px);
+   line-height: 0.96;
+   letter-spacing: -0.07em;
+  }
+
+  .gradient-text {
+   background: linear-gradient(135deg, #fff, #cfe5ff 44%, #9d8cff);
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+  }
+
+  .hero-lead {
+   max-width: 690px;
+   margin: 0;
+   color: var(--muted);
+   font-size: clamp(16px, 2vw, 20px);
+  }
+
+  .hero-actions {
+   display: flex;
+   gap: 12px;
+   flex-wrap: wrap;
+   margin-top: 26px;
+  }
+
+  .btn {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   min-height: 44px;
+   padding: 0 18px;
+   border-radius: 14px;
+   border: 1px solid var(--line);
+   background: rgba(238, 244, 255, 0.06);
+   color: var(--text);
+   font-weight: 900;
+   box-shadow: 0 10px 28px rgba(0,0,0,.18);
+  }
+
+  .btn.primary {
+   border-color: rgba(77, 158, 255, 0.52);
+   background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  }
+
+  .btn:hover { transform: translateY(-1px); }
+
+  .hero-card, .card, .project-card {
+   border: 1px solid var(--line);
+   border-radius: 24px;
+   background: linear-gradient(180deg, var(--panel-strong), var(--panel));
+   box-shadow: var(--shadow);
+  }
+
+  .hero-card {
+   padding: 22px;
+   min-height: 100%;
+   overflow: hidden;
+   position: relative;
+  }
+
+  .hero-card::before {
+   content: "";
+   position: absolute;
+   inset: -80px -70px auto auto;
+   width: 180px;
+   height: 180px;
+   border-radius: 999px;
+   background: rgba(77, 158, 255, 0.20);
+   filter: blur(18px);
+  }
+
+  .app-preview {
+   position: relative;
+   padding: 16px;
+   border-radius: 20px;
+   border: 1px solid rgba(120, 160, 220, 0.16);
+   background: #0a0f17;
+  }
+
+  .preview-top { display: flex; gap: 6px; margin-bottom: 14px; }
+  .preview-dot { width: 9px; height: 9px; border-radius: 999px; background: rgba(238,244,255,.24); }
+
+  .preview-title {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   gap: 10px;
+   padding: 14px;
+   border-radius: 16px;
+   background: #121a27;
+   margin-bottom: 12px;
+  }
+
+  .preview-title strong { font-size: 16px; }
+  .badge { padding: 4px 9px; border-radius: 999px; background: rgba(100, 217, 138, 0.12); color: var(--ok); font-size: 12px; font-weight: 900; }
+
+  .preview-block { padding: 12px; border-radius: 14px; background: rgba(238,244,255,.045); border: 1px solid rgba(120,160,220,.11); margin-top: 10px; }
+  .preview-line { height: 9px; border-radius: 999px; background: rgba(238,244,255,.14); margin: 8px 0; }
+  .preview-line.short { width: 58%; }
+  .preview-line.mid { width: 76%; }
+
+  .thumb-row { display: flex; gap: 8px; margin-top: 12px; }
+  .thumb { flex: 1; height: 62px; border-radius: 14px; border: 1px dashed rgba(77,158,255,.36); background: linear-gradient(135deg, rgba(77,158,255,.18), rgba(139,108,255,.10)); display: grid; place-items: center; color: rgba(238,244,255,.54); font-weight: 900; }
+
+  .stats {
+   display: grid;
+   grid-template-columns: repeat(4, minmax(0, 1fr));
+   gap: 12px;
+   margin-top: 28px;
+  }
+
+  .stat-card {
+   padding: 16px;
+   border: 1px solid var(--line);
+   border-radius: 20px;
+   background: rgba(18, 24, 34, 0.68);
+  }
+
+  .stat-value {
+   font-size: 24px;
+   line-height: 1;
+   font-weight: 900;
+   color: #fff;
+  }
+
+  .stat-label {
+   margin-top: 8px;
+   color: var(--muted);
+   font-size: 13px;
+  }
+
+  .workflow {
+   display: grid;
+   grid-template-columns: repeat(4, minmax(0, 1fr));
+   gap: 12px;
+   counter-reset: step;
+  }
+
+  .workflow-step {
+   position: relative;
+   padding: 18px;
+   border-radius: 22px;
+   border: 1px solid var(--line);
+   background: rgba(18, 24, 34, 0.78);
+   overflow: hidden;
+  }
+
+  .workflow-step::before {
+   counter-increment: step;
+   content: "0" counter(step);
+   display: inline-grid;
+   place-items: center;
+   width: 34px;
+   height: 34px;
+   margin-bottom: 14px;
+   border-radius: 12px;
+   background: linear-gradient(135deg, rgba(77,158,255,.28), rgba(139,108,255,.20));
+   border: 1px solid rgba(77,158,255,.24);
+   color: #cfe5ff;
+   font-weight: 900;
+  }
+
+  .workflow-step h3 { margin: 0 0 8px; }
+  .workflow-step p { margin: 0; color: var(--muted); }
+
+  .support-strip {
+   display: grid;
+   grid-template-columns: minmax(0, 1fr) auto;
+   gap: 18px;
+   align-items: center;
+   margin-top: 16px;
+   padding: 18px;
+   border-radius: 22px;
+   border: 1px solid rgba(100,217,138,.22);
+   background: rgba(100,217,138,.08);
+  }
+
+  .support-strip strong { color: var(--ok); }
+
+  section { padding: 38px 0; }
+
+  .section-head { margin-bottom: 18px; }
+  .section-kicker { color: var(--accent); font-size: 13px; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; }
+  h2 { margin: 6px 0 8px; font-size: clamp(28px, 4vw, 46px); line-height: 1.08; letter-spacing: -0.04em; }
+  .section-desc { max-width: 720px; margin: 0; color: var(--muted); }
+
+  .grid { display: grid; gap: 14px; }
+  .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .card { padding: 20px; }
+  .card h3 { margin: 0 0 8px; font-size: 18px; }
+  .card p { margin: 0; color: var(--muted); }
+  .icon-chip { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 14px; background: rgba(77,158,255,.12); border: 1px solid rgba(77,158,255,.25); color: #cfe5ff; font-weight: 900; }
+
+  .project-stack { display: grid; gap: 14px; }
+  .project-card { padding: 24px; display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 20px; align-items: center; }
+  .project-card.teaser { opacity: 0.92; }
+  .project-icon { width: 108px; height: 108px; border-radius: 26px; background: #0a0f17; border: 1px solid var(--line); padding: 16px; display: grid; place-items: center; }
+  .project-icon img { max-width: 100%; border-radius: 18px; }
+  .project-initial { width: 100%; height: 100%; border-radius: 20px; display: grid; place-items: center; background: linear-gradient(135deg, rgba(77,158,255,.28), rgba(139,108,255,.22)); color: #fff; font-size: 30px; font-weight: 900; }
+  .project-status { display: inline-flex; margin-bottom: 8px; padding: 4px 9px; border-radius: 999px; border: 1px solid rgba(255,204,102,.32); background: rgba(255,204,102,.10); color: var(--warn); font-size: 12px; font-weight: 900; }
+  .meta-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 16px; }
+  .pill { display: inline-flex; padding: 5px 10px; border-radius: 999px; background: rgba(238,244,255,.06); border: 1px solid rgba(120,160,220,.13); color: var(--muted); font-size: 12px; font-weight: 800; }
+
+  .timeline { display: grid; gap: 12px; }
+  .timeline-item { padding: 18px; border-radius: 20px; border: 1px solid var(--line); background: rgba(18,24,34,.78); }
+  .timeline-item strong { color: var(--text); }
+  .timeline-item ul { margin: 10px 0 0; padding-left: 20px; color: var(--muted); }
+
+  .download-box { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 24px; border-radius: 26px; border: 1px solid rgba(77,158,255,.26); background: linear-gradient(135deg, rgba(77,158,255,.14), rgba(139,108,255,.10)); box-shadow: var(--shadow); }
+  .download-box p { color: var(--muted); margin: 4px 0 0; }
+
+  .footer { padding: 34px 0 48px; color: var(--muted); border-top: 1px solid var(--line); margin-top: 36px; }
+  .footer-inner { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+
+  @media (max-width: 860px) {
+   .hero-grid, .grid.three, .grid.two, .project-card, .download-box, .workflow, .stats { grid-template-columns: 1fr; }
+   .nav-inner { align-items: flex-start; flex-direction: column; padding: 12px 0; }
+   .nav-links { justify-content: flex-start; }
+   .hero { padding-top: 42px; }
+  }
+ </style>
+</head>
+<body>
+ <header class="nav">
+  <div class="wrap nav-inner">
+   <a class="brand" href="#top" aria-label="回到顶部">
+    <div class="brand-mark">Z</div>
+    <div>
+     <div class="brand-title">庄泽 零柒zero</div>
+     <div class="brand-subtitle">AI RETOUCH WORKSPACE</div>
+    </div>
+   </a>
+   <nav class="nav-links" aria-label="页面导航">
+    <a href="#work">项目</a>
+    <a href="#features">功能</a>
+    <a href="#download">下载</a>
+    <a href="#history">更新</a>
+    <a href="#contact">联系</a>
+   </nav>
+  </div>
+ </header>
+
+ <main id="top">
+  <section class="hero">
+   <div class="wrap hero-grid">
+    <div>
+     <div class="eyebrow">ZHUANG-AI 项目矩阵 Photoshop + Mobile + Pro Workflow</div>
+     <h1><span class="gradient-text">AI 修图插件项目</span><br>从插件到移动端再到专业工作流。</h1>
+     <p class="hero-lead">ZHUANG-AI 是已经完成并可下载的 Photoshop UXP 插件，主推接入 gptimagine-2 和 Nano Banana 全系列，以及 Gpt全系列，Gemini全系列文字模型。下一阶段会扩展到 ZHUANG-AI mini 手机端和 ZHUANG-AI pro 加强版非线性修图工作流。</p>
+     <div class="hero-actions">
+      <a class="btn primary" href="#work">查看项目矩阵</a>
+      <a class="btn" href="#download">下载已完成版本</a>
+     </div>
+    </div>
+    <div class="hero-card">
+     <div class="app-preview">
+      <div class="preview-top"><span class="preview-dot"></span><span class="preview-dot"></span><span class="preview-dot"></span></div>
+      <div class="preview-title"><strong>ZHUANG-AI 修图插件</strong><span class="badge">1.3.5 正式版</span></div>
+      <div class="preview-block">
+       <div class="preview-line mid"></div>
+       <div class="preview-line"></div>
+       <div class="preview-line short"></div>
+      </div>
+      <div class="thumb-row">
+       <div class="thumb">主图</div>
+       <div class="thumb">图2</div>
+       <div class="thumb">图3</div>
+       <div class="thumb">图4</div>
+      </div>
+      <div class="preview-block">
+       <div class="preview-line"></div>
+       <div class="preview-line mid"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <section id="work">
+   <div class="wrap">
+    <div class="section-head">
+     <div class="section-kicker">Project Suite</div>
+     <h2>ZHUANG-AI 项目矩阵</h2>
+     <p class="section-desc">这不是单个插件，而是一套围绕 AI 修图的产品线：已完成的 ZHUANG-AI Photoshop 插件、规划中的 ZHUANG-AI mini 手机端，以及加强版 ZHUANG-AI pro 非线性修图工作流。</p>
+    </div>
+    <div class="project-stack">
+     <div class="project-card">
+      <div class="project-icon"><img src="assets/icon_D.png" alt="ZHUANG-AI 图标"></div>
+      <div>
+       <h3>ZHUANG-AI 1.3.5 正式版</h3>
+       <p>ZHUANG-AI 是当前已经完成的 Photoshop 原生 UXP 插件，定位是把 AI 生图和文字对话真正放进修图流程里。核心优势是接入 gptimagine-2 与 Nano Banana 全系列，同时接入 Gemini Gpt全系列文字模型；配合 Photoshop 选区、多参考图、预设、批处理、WebUI 和回图对齐，形成完整的 AI 修图闭环。</p>
+       <div class="meta-row">
+        <span class="pill">已完成</span>
+        <span class="pill">Photoshop UXP插件</span>
+        <span class="pill">gptimagine-2</span>
+        <span class="pill">Nano Banana 全系列</span>
+        <span class="pill">Gpt全系列</span>
+        <span class="pill">Gemini 全系列</span>
+        <span class="pill">4 张参考图</span>
+       </div>
+       <div class="hero-actions" style="margin-top:0">
+        <a class="btn primary" href="downloads/ZHUANG-AI-1.3.5.zip">下载插件</a>
+        <a class="btn" href="tutorial.html">安装教程</a>
+        <a class="btn" href="#contact">加入交流群</a>
+       </div>
+      </div>
+     </div>
+
+     <div class="project-card teaser">
+      <div class="project-icon"><div class="project-initial">M</div></div>
+      <div>
+       <span class="project-status">预告中 · 暂不可下载</span>
+       <h3>ZHUANG-AI mini 手机端</h3>
+       <p>ZHUANG-AI mini 是项目矩阵里的移动端方向，目标是在手机上提供更轻量的 AI 修图入口，用来做快速预览、灵感测试、移动端参考图整理和简单生成。它不是当前可下载版本，作为后续产品预告展示。</p>
+       <div class="meta-row">
+        <span class="pill">手机端</span>
+        <span class="pill">移动修图</span>
+        <span class="pill">轻量生成</span>
+        <span class="pill">参考图整理</span>
+        <span class="pill">gptimagine-2</span>
+        <span class="pill">Nano Banana 全系列</span>
+        <span class="pill">Gpt全系列</span>
+        <span class="pill">Gemini 全系列</span>
+        <span class="pill">Coming Soon</span>
+       </div>
+      </div>
+     </div>
+
+     <div class="project-card teaser">
+      <div class="project-icon"><div class="project-initial">P</div></div>
+      <div>
+       <span class="project-status">预告中 · 暂不可下载</span>
+       <h3>ZHUANG-AI pro 加强版非线性修图工作流</h3>
+       <p>ZHUANG-AI pro 是加强版专业方向，重点不是单次生图，而是把智能磨皮、高低频分离、中性灰光影、局部锐化、背景压暗、修复层和 AI 分析组织成可重复、可调整的非线性修图流程。</p>
+       <div class="meta-row">
+        <span class="pill">加强版</span>
+        <span class="pill">非线性修图</span>
+        <span class="pill">节点式流程</span>
+        <span class="pill">专业后期</span>
+        <span class="pill">gptimagine-2</span>
+        <span class="pill">Nano Banana 全系列</span>
+        <span class="pill">Gpt全系列</span>
+        <span class="pill">Gemini 全系列</span>
+        <span class="pill">Coming Soon</span>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <section id="features">
+   <div class="wrap">
+    <div class="section-head">
+     <div class="section-kicker">ZHUANG-AI Core</div>
+     <h2>已完成版本的功能与优点</h2>
+     <p class="section-desc">当前可下载的 ZHUANG-AI 主推模型接入和 Photoshop 工作流融合：图像生成走 gptimagine-2 与 Nano Banana 全系列，文字对话走 Imagine-2 Imagine-2 与 Gemini 系列，并通过选区、参考图、预设和批处理把它们落到真实修图场景。</p>
+    </div>
+   
+    <div class="grid three" style="margin-top:14px">
+     <div class="card"><div class="icon-chip">01</div><h3>选区图生图</h3><p>直接读取 Photoshop 当前框选区域作为主图，生成结果可回写到当前文档，普通对齐不会改变画布大小。</p></div>
+     <div class="card"><div class="icon-chip">02</div><h3>多参考图</h3><p>主图与参考图分离，最多 4 张参考图，可作为风格、脸部、材质和细节参考，支持预览、删除和重新抓取。</p></div>
+     <div class="card"><div class="icon-chip">03</div><h3>GRS 图像接口</h3><p>支持 Nano Banana-pro、Nano Banana-fast、Nano Banana 2、gptimagine-2 等图生图模型入口。</p></div>
+     <div class="card"><div class="icon-chip">04</div><h3>GRS 对话分析</h3><p>统一使用 GRS 对话模型，支持文字问答，也可以读取 Photoshop 选区进行图文分析和修图建议。</p></div>
+     <div class="card"><div class="icon-chip">05</div><h3>预设与批处理</h3><p>提示词预设可保存参考图；批处理任务会记住添加时的选区和参考图上下文，适合连续生成。</p></div>
+     <div class="card"><div class="icon-chip">06</div><h3>SD WebUI 工作流</h3><p>连接本地 WebUI，读取模型和 Lora，集中管理正向、反向提示词、采样方法、步数和重绘幅度。</p></div>
+    </div>
+   </div>
+  </section>
+
+  <section id="workflow">
+   <div class="wrap">
+    <div class="section-head">
+     <div class="section-kicker">Workflow</div>
+     <h2>从 Photoshop 选区到可用结果</h2>
+     <p class="section-desc">ZHUANG-AI 系列的核心逻辑是让 AI 生成尽量贴近真实修图动作，而不是脱离原生 Photoshop 工作流单独出图。</p>
+    </div>
+    <div class="workflow">
+     <div class="workflow-step"><h3>读取选区</h3><p>在 Photoshop 里框选要修的区域，插件读取主图和选区位置。</p></div>
+     <div class="workflow-step"><h3>添加参考图</h3><p>继续框选脸部、材质、风格或细节区域，作为额外参考图。</p></div>
+     <div class="workflow-step"><h3>选择模型与预设</h3><p>选择 GRS 图生图模型，套用提示词预设或输入自定义修图目标。</p></div>
+     <div class="workflow-step"><h3>生成并回写</h3><p>生成完成后自动放回 Photoshop 当前文档，继续人工精修。</p></div>
+    </div>
+   </div>
+  </section>
+
+  <section id="download">
+   <div class="wrap">
+    <div class="download-box">
+     <div>
+      <div class="section-kicker">Download</div>
+      <h2 style="margin-bottom:6px">下载 ZHUANG-AI 1.3.5</h2>
+      <p>下载后解压，把整个 <strong>ZHUANG-AI 1.3.5</strong> 文件夹复制到 Photoshop Plug-ins 目录，或使用 UXP Developer Tool 加载里面的 manifest.json。安装和使用遇到问题，可加入插件交流群：<strong>1103212650</strong>。</p>
+     </div>
+     <a class="btn primary" href="downloads/ZHUANG-AI-1.3.5.zip">立即下载</a>
+    </div>
+   </div>
+  </section>
+
+  <section id="history">
+   <div class="wrap">
+    <div class="section-head">
+     <div class="section-kicker">Changelog</div>
+     <h2>版本历史</h2>
+    </div>
+    <div class="timeline">
+     <div class="timeline-item">
+      <strong>1.3.5 正式版（2026-05-12）</strong>
+      <ul>
+       <li>新增图生图多参考图功能，主图与参考图分离，最多支持 4 张参考图。</li>
+       <li>参考图支持从 Photoshop 当前选区添加、缩略图预览、删除，并随 GRS 图生图请求一起发送。</li>
+       <li>参考图可随预设保存/加载，也会随批处理任务保留。</li>
+       <li>修复智能对齐会改变当前 Photoshop 文档/画布尺寸的问题。</li>
+       <li>优化伪下拉框层级和 Photoshop UXP 面板布局。</li>
+      </ul>
+     </div>
+     <div class="timeline-item">
+      <strong>1.3.4 公测版</strong>
+      <ul>
+       <li>接入 GRS /v1/chat/completions 文字生成接口，对话功能统一使用 GRS API 密钥。</li>
+       <li>清理 OpenAI、NewAPI、Google 等非 GRS 对话模型入口。</li>
+       <li>支持对话读取 Photoshop 选区后进行图文问答。</li>
+       <li>重构生图、设置、日志等界面结构，提升窄面板可用性。</li>
+      </ul>
+     </div>
+    </div>
+   </div>
+  </section>
+
+  <section id="contact">
+   <div class="wrap grid two">
+    <div class="card">
+     <div class="section-kicker">About</div>
+     <h2>庄泽 零柒zero</h2>
+     <p>围绕 Photoshop 修图、AI 图像生成和创意工作流做工具设计与插件开发。</p>
+    </div>
+    <div class="card">
+     <div class="section-kicker">Contact</div>
+     <h2>联系与声明</h2>
+     <p>插件咨询请 QQ 私聊庄泽：3921209139。插件交流群：1103212650。ZHUANG-AI 插件完全免费，如果你从任何渠道付费获取，请立即举报商家。</p>
+    </div>
+   </div>
+  </section>
+ </main>
+
+ <footer class="footer">
+  <div class="wrap footer-inner">
+   <div>© 2026 庄泽 零柒zero. ZHUANG-AI 修图插件。</div>
+   <div>Made for Photoshop UXP and AI retouch workflows.</div>
+  </div>
+ </footer>
+</body>
+</html>
