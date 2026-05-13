@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#080b10">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ZHUANG mini">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>ZHUANG-AI mini</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-topbar">
+      <div>
+        <div class="eyebrow">Mobile Preview</div>
+        <h1>ZHUANG-AI mini</h1>
+      </div>
+      <div class="status-pill">GRS Ready</div>
+    </header>
+
+    <main>
+      <section class="tab-panel active" data-panel="create">
+        <div class="hero-card">
+          <div class="hero-copy">
+            <div class="mini-badge">ZHUANG-AI PROJECT SUITE</div>
+            <h2>手机端轻量 AI 修图入口</h2>
+            <p>用于移动端快速预览、整理参考图、测试提示词并通过 GRS 完成手机端 AI 修图生成。</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span>模式</span><strong id="modeLabel">图生图</strong></div>
+          <div class="stat-card"><span>参考图</span><strong><span id="referenceCount">0</span>/4</strong></div>
+          <div class="stat-card"><span>生图模型</span><strong id="activeImageModel">nano-banana-pro</strong></div>
+        </div>
+
+        <section class="card stack">
+          <div class="section-head">
+            <div>
+              <h3>主图</h3>
+              <p>从手机相册选择一张主图作为生成上下文。</p>
+            </div>
+            <label class="mini-button ghost" for="mainImageInput">选择图片</label>
+            <input id="mainImageInput" type="file" accept="image/*" hidden>
+          </div>
+          <div id="mainImageDrop" class="upload-card">
+            <div id="mainPlaceholder" class="upload-placeholder">
+              <div class="upload-icon">+</div>
+              <strong>添加主图</strong>
+              <span>支持手机相册图片，本地预览不上传</span>
+            </div>
+            <img id="mainPreview" alt="" hidden>
+            <div id="selectionBox" class="selection-box" hidden></div>
+          </div>
+          <div class="selection-tools">
+            <button id="readSelection" class="mini-button ghost small" type="button">读取选区</button>
+            <button id="clearSelection" class="mini-button ghost small" type="button">清除选区</button>
+            <label class="ratio-lock">
+              <input id="lockRatio" type="checkbox">
+              <span>锁定比例</span>
+            </label>
+            <div id="selectionRatio" class="pseudo-select compact" data-select="selectionRatio" aria-label="框选比例"></div>
+            <span id="selectionStatus" class="selection-status">添加主图后，在图片上拖拽框选区域。</span>
+          </div>
+          <div id="selectionPreviewWrap" class="selection-preview" hidden>
+            <span>当前选区预览</span>
+            <img id="selectionPreview" alt="选区预览" hidden>
+          </div>
+        </section>
+
+        <section class="card stack">
+          <div class="section-head">
+            <div>
+              <h3>参考图</h3>
+              <p>最多 4 张，用作风格、脸部、材质或细节参考。</p>
+            </div>
+          </div>
+          <div id="referenceSlots" class="reference-grid"></div>
+        </section>
+
+        <section class="card stack">
+          <h3>模型与输出</h3>
+          <label class="field-label" for="imageModel">生图模型</label>
+          <div id="imageModel" class="pseudo-select" data-value="nano-banana-fast" data-options='[{"value":"nano-banana-fast","label":"nano-banana-fast (GRS Nano Banana)"},{"value":"nano-banana","label":"nano-banana (GRS Nano Banana)"},{"value":"nano-banana-2","label":"nano-banana-2 (GRS Nano Banana)"},{"value":"nano-banana-2-cl","label":"nano-banana-2-cl (GRS Nano Banana)"},{"value":"nano-banana-2-4k-cl","label":"nano-banana-2-4k-cl (GRS Nano Banana 4K)"},{"value":"nano-banana-pro","label":"nano-banana-pro (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-vt","label":"nano-banana-pro-vt (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-cl","label":"nano-banana-pro-cl (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-vip","label":"nano-banana-pro-vip (GRS Nano Banana VIP)"},{"value":"nano-banana-pro-4k-vip","label":"nano-banana-pro-4k-vip (GRS Nano Banana 4K VIP)"},{"value":"gpt-image-2","label":"gpt-image-2 / GPT-imagine-2 (GRS 图生图优化)"},{"value":"gpt-image-2-vip","label":"gpt-image-2-vip (GRS 图生图优化 VIP)"}]'></div>
+          <div class="field-tip">模型列表与 ZHUANG-AI 插件保持一致；比例按主图选区自动适配。</div>
+          <div class="param-grid">
+            <div class="param-cell">
+              <label class="field-label" for="imageResolution">图片大小</label>
+              <div id="imageResolution" class="pseudo-select" data-value="auto" data-options='[{"value":"auto","label":"自适应分辨率"},{"value":"1K","label":"1K"},{"value":"2K","label":"2K"},{"value":"4K","label":"4K"}]'></div>
+            </div>
+            <div class="param-cell">
+              <label class="field-label" for="imageCount">生成数量</label>
+              <div id="imageCount" class="pseudo-select" data-value="1" data-options='[{"value":"1","label":"1张"},{"value":"2","label":"2张"},{"value":"3","label":"3张"},{"value":"4","label":"4张"}]'></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card stack">
+          <div class="section-head compact">
+            <div>
+              <h3>提示词</h3>
+              <p>选择预设或输入自己的修图目标。</p>
+            </div>
+          </div>
+          <div class="prompt-preset-filter collapsed" id="promptPresetFilter">
+            <div class="prompt-preset-toolbar">
+              <input id="promptPresetSearch" class="field-control" type="search" placeholder="搜索预设">
+              <button id="togglePromptPresets" class="mini-button ghost small" type="button">清空</button>
+            </div>
+            <div class="prompt-preset-selects">
+              <div id="promptPresetMajor" class="pseudo-select compact-filter" data-value="二次元" data-options='[{"value":"二次元","label":"二次元"}]'></div>
+              <div id="promptPresetCategory" class="pseudo-select compact-filter" data-value="脸部" data-options='[]'></div>
+            </div>
+            <div id="promptPresetSelect" class="pseudo-select" data-value="" data-options='[]'></div>
+          </div>
+          <textarea id="promptInput" class="prompt-box" placeholder="例如：自然保留皮肤纹理，弱化眼袋，统一面部偏红区域，保持真实商业修图质感。"></textarea>
+          <div class="action-row">
+            <button id="generatePreview" class="mini-button primary">开始生成</button>
+            <button id="savePreset" class="mini-button ghost">保存为预设</button>
+          </div>
+        </section>
+
+        <section class="card stack">
+          <div class="section-head compact">
+            <div>
+              <h3>生成结果</h3>
+              <p id="resultStatus">生成后的图片会显示在这里。</p>
+            </div>
+          </div>
+          <div id="resultGrid" class="result-grid"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel chat-panel" data-panel="chat">
+        <section class="card stack chat-card">
+          <div class="section-head">
+            <div>
+              <h3>对话分析</h3>
+              <p>用于真实 GRS 文字对话，也可以结合当前主图和选区上下文整理修图建议。</p>
+            </div>
+            <div class="chat-actions">
+              <span id="chatMemoryStatus" class="chat-memory-status">记忆已开启 · 最近 20 轮</span>
+              <button id="clearChat" class="mini-button ghost small">清空</button>
+            </div>
+          </div>
+          <label class="field-label" for="chatModel">对话模型</label>
+          <div id="chatModel" class="pseudo-select" data-value="grs/gemini-3.1-pro" data-options='[{"value":"grs/gpt-5.4","label":"gpt-5.4 (GRS)"},{"value":"grs/gpt-5.5","label":"gpt-5.5 (GRS)"},{"value":"grs/gemini-3-pro","label":"gemini-3-pro (GRS)"},{"value":"grs/gemini-3.1-pro","label":"gemini-3.1-pro (GRS)"},{"value":"grs/gemini-2.5-pro","label":"gemini-2.5-pro (GRS)"}]'></div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <textarea id="chatInput" class="chat-input" placeholder="例如：帮我分析这张图的修图方向，重点保留真实皮肤质感。"></textarea>
+            <button id="sendChat" class="mini-button primary" type="button">发送</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-panel="presets">
+        <section class="card stack">
+          <h3>预设库</h3>
+          <p class="muted">按分类筛选预设，也可以搜索标题、分类或提示词内容。</p>
+          <div class="preset-filter-bar">
+            <input id="presetSearch" class="field-control" type="search" placeholder="搜索预设、分类或提示词">
+            <div id="presetCategorySelect" class="pseudo-select" data-value="脸部" data-options='[]'></div>
+            <div id="presetContentSelect" class="pseudo-select" data-value="" data-options='[]'></div>
+          </div>
+          <div id="presetList" class="preset-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-panel="history">
+        <section class="card stack">
+          <div class="section-head">
+            <div>
+              <h3>生成历史</h3>
+              <p>生成记录保存在本机浏览器，用来回看移动端生成结果。</p>
+            </div>
+            <button id="clearHistory" class="mini-button ghost small">清空</button>
+          </div>
+          <div id="historyList" class="history-list"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" data-panel="settings">
+        <section class="card stack">
+          <h3>设置</h3>
+          <label class="field-label" for="apiKey">GRS API Key</label>
+          <input id="apiKey" class="field-control" type="password" placeholder="保存在本机浏览器，请勿在他人设备填写">
+          <label class="field-label" for="apiUrl">GRS API 地址</label>
+          <input id="apiUrl" class="field-control" type="url" placeholder="https://grsaiapi.com">
+          <label class="field-label" for="defaultImageModel">默认生图模型</label>
+          <div id="defaultImageModel" class="pseudo-select" data-value="nano-banana-fast" data-options='[{"value":"nano-banana-fast","label":"nano-banana-fast (GRS Nano Banana)"},{"value":"nano-banana","label":"nano-banana (GRS Nano Banana)"},{"value":"nano-banana-2","label":"nano-banana-2 (GRS Nano Banana)"},{"value":"nano-banana-2-cl","label":"nano-banana-2-cl (GRS Nano Banana)"},{"value":"nano-banana-2-4k-cl","label":"nano-banana-2-4k-cl (GRS Nano Banana 4K)"},{"value":"nano-banana-pro","label":"nano-banana-pro (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-vt","label":"nano-banana-pro-vt (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-cl","label":"nano-banana-pro-cl (GRS Nano Banana Pro)"},{"value":"nano-banana-pro-vip","label":"nano-banana-pro-vip (GRS Nano Banana VIP)"},{"value":"nano-banana-pro-4k-vip","label":"nano-banana-pro-4k-vip (GRS Nano Banana 4K VIP)"},{"value":"gpt-image-2","label":"gpt-image-2 / GPT-imagine-2 (GRS 图生图优化)"},{"value":"gpt-image-2-vip","label":"gpt-image-2-vip (GRS 图生图优化 VIP)"}]'></div>
+          <label class="field-label" for="defaultTextModel">默认对话模型</label>
+          <div id="defaultTextModel" class="pseudo-select" data-value="grs/gemini-3.1-pro" data-options='[{"value":"grs/gpt-5.4","label":"gpt-5.4 (GRS)"},{"value":"grs/gpt-5.5","label":"gpt-5.5 (GRS)"},{"value":"grs/gemini-3-pro","label":"gemini-3-pro (GRS)"},{"value":"grs/gemini-3.1-pro","label":"gemini-3.1-pro (GRS)"},{"value":"grs/gemini-2.5-pro","label":"gemini-2.5-pro (GRS)"}]'></div>
+          <button id="saveSettings" class="mini-button primary">保存设置</button>
+          <div class="notice-box">
+            API Key 仅保存在本机浏览器；生图和对话请求会直接发送到你配置的 GRS API 地址。插件交流群：<strong>1103212650</strong>。
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <nav class="bottom-tabs" aria-label="底部导航">
+      <button class="tab-button active" data-tab="create"><span>创作</span></button>
+      <button class="tab-button" data-tab="chat"><span>对话</span></button>
+      <button class="tab-button" data-tab="presets"><span>预设</span></button>
+      <button class="tab-button" data-tab="history"><span>历史</span></button>
+      <button class="tab-button" data-tab="settings"><span>设置</span></button>
+    </nav>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js"));
+    }
+  </script>
+</body>
+</html>

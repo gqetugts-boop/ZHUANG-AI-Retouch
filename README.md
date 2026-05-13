@@ -1,7 +1,7 @@
 # ZHUANG-AI Retouch
 
-> AI 修图项目矩阵：已完成的 Photoshop UXP 插件、规划中的 ZHUANG-AI mini 手机端，以及 ZHUANG-AI pro 加强版非线性修图工作流。  
-> AI retouch project suite: a completed Photoshop UXP plugin, upcoming ZHUANG-AI mini for mobile, and ZHUANG-AI pro for nonlinear retouch workflows.
+> AI 修图项目矩阵：已完成的 Photoshop UXP 插件、已发布的 ZHUANG-AI mini 手机端，以及规划中的 ZHUANG-AI pro 加强版非线性修图工作流。  
+> AI retouch project suite: a completed Photoshop UXP plugin, a released ZHUANG-AI mini mobile app, and a planned ZHUANG-AI pro nonlinear retouch workflow.
 
 ## 官网 / Website
 
@@ -24,9 +24,14 @@ Core idea: bring AI image generation, text chat, reference images, prompt preset
 
 ### ZHUANG-AI mini
 
-手机端项目预告，暂不可下载。
+已发布的手机端 Web / PWA 轻量应用，支持主图、参考图、提示词预设、对话分析、历史记录与本地设置保存，并可直接连接 GRS API。
 
-Mobile version preview, not available for download yet.
+Released mobile Web / PWA app with main image upload, reference images, prompt presets, chat analysis, history, local settings, and direct GRS API connection.
+
+- 在线入口 / Live app: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/mini/
+- 打包下载 / Packages:
+  - `dist/ZHUANG-AI-mini.zip`
+  - `dist/ZHUANG-AI-mini-PWA.zip`
 
 ### ZHUANG-AI pro
 
@@ -51,13 +56,13 @@ Pro nonlinear retouch workflow preview, not available for download yet.
 
 ### 生图模型 / Image Models
 
-- Gpt Imagine-2
-- Nano Banana 全系列 
+- claude Imagine-2
+- Nano Banana 全系列 / Nano Banana full series
 
 ### 文字模型 / Text Models
 
 - Gemini 全系列 / Gemini full series
-- GPT 全系列 / GPT full series
+- claude 全系列 / claude full series
 
 ## 下载 / Download
 
@@ -73,6 +78,8 @@ The release package is also included in this repository:
 
 - `ZHUANG-AI 1.3.5.zip`
 - `ZHUANG-AI 1.3.5/`
+- `dist/ZHUANG-AI-mini.zip`
+- `dist/ZHUANG-AI-mini-PWA.zip`
 
 ## 安装 / Installation
 
