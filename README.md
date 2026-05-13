@@ -22,7 +22,7 @@ ZHUANG-AI is the completed and downloadable Photoshop UXP plugin.
 
 Core idea: bring AI image generation, text chat, reference images, prompt presets, batch processing, and Photoshop placement into one native panel.
 
-### ZHUANG-AI mini
+### ZHUANG-AI mini 1.1.1 测试版
 
 已发布的手机端 Web / PWA 轻量应用，支持主图、参考图、提示词预设、对话分析、历史记录与本地设置保存，并可直接连接 GRS API。
 
