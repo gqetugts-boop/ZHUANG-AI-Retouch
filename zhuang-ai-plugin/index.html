@@ -196,6 +196,11 @@ button, select, .tab, .custom-select-trigger, .custom-select-option { cursor: po
 }
 
 .workspace { display: block; }
+.splash-screen { display: flex; flex-direction: column; gap: var(--gap); }
+.app-shell.splash-open .tabs,
+.app-shell.splash-open .workspace { display: none !important; }
+.app-shell:not(.splash-open) .splash-screen { display: none !important; }
+.splash-close-btn { width: 100%; min-height: 44px; }
 .tab-content { display: none; }
 .tab-content.active { display: flex; flex-direction: column; gap: var(--gap); }
 
@@ -229,20 +234,50 @@ button, select, .tab, .custom-select-trigger, .custom-select-option { cursor: po
     background: linear-gradient(180deg, rgba(26, 34, 48, 0.95), rgba(21, 27, 38, 0.95));
 }
 
-.module-title {
-    margin: 0;
-    color: var(--text-main);
-    font-size: calc(14px * var(--ui-scale));
-    font-weight: 900;
-    line-height: 1.25;
-}
-
 .module-desc {
-    margin-top: 5px;
-    color: var(--text-muted);
-    font-size: calc(10px * var(--ui-scale));
+    margin-top: 6px;
+    color: var(--text-secondary);
+    font-size: calc(12px * var(--ui-scale));
     line-height: 1.45;
 }
+
+.splash-hero {
+    border-color: rgba(77, 158, 255, 0.26);
+    background: linear-gradient(135deg, rgba(77, 158, 255, 0.18), rgba(124, 92, 255, 0.14)), var(--bg-card);
+}
+
+.splash-meta-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.splash-meta-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid rgba(120, 160, 220, 0.12);
+    border-radius: 12px;
+    background: rgba(13, 17, 24, 0.52);
+}
+
+.splash-meta-item span {
+    flex: 0 0 auto;
+    color: var(--text-muted);
+    font-size: calc(10px * var(--ui-scale));
+}
+
+.splash-meta-item strong {
+    min-width: 0;
+    color: var(--text-main);
+    font-size: calc(12px * var(--ui-scale));
+    line-height: 1.35;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
 
 .module-badge {
     flex: 0 0 auto;
@@ -687,10 +722,47 @@ textarea::placeholder {
 
 #settings .settings-group {
     margin: 10px 0 0;
+    border: 1px solid rgba(77, 158, 255, 0.16);
+    border-radius: var(--radius-lg);
+    background: rgba(13, 17, 24, 0.48);
+    overflow: hidden;
+}
+
+#settings .settings-group-toggle {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 0;
+    background: rgba(77, 158, 255, 0.08);
+    color: var(--text-main);
+    font-size: calc(13px * var(--ui-scale));
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+}
+
+#settings .settings-group-toggle::after {
+    content: "收起";
+    float: right;
+    color: var(--text-secondary);
+    font-size: calc(11px * var(--ui-scale));
+    font-weight: 500;
+}
+
+#settings .settings-group.collapsed .settings-group-toggle::after {
+    content: "展开";
 }
 
 #settings .settings-group-body {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
+    padding: 12px;
+}
+
+#settings .settings-group.collapsed .settings-group-body {
+    display: none !important;
 }
 
 #settings .settings-save-standalone {
@@ -729,13 +801,6 @@ textarea::placeholder {
     color: rgba(238, 244, 255, 0.88);
     font-size: calc(11px * var(--ui-scale));
 }
-
-#settings .settings-group[data-group="grs"] { display: block; }
-#settings .settings-group[data-group="grs"] .settings-group-toggle,
-#settings .settings-group[data-group="openai"],
-#settings .settings-group[data-group="newapi"] { display: none !important; }
-#settings .settings-group[data-group="grs"] .settings-group-body,
-#settings .settings-group[data-group="other"] .settings-group-body { height: auto !important; max-height: none !important; padding: 0 !important; border: none !important; overflow: visible !important; }
 
 .custom-select {
     position: relative;
@@ -1190,14 +1255,14 @@ html.global-dropdown-open sp-textarea {
 </head>
 <body>
     <div class="container">
-        <div class="app-shell section">
+        <div class="app-shell section splash-open">
             <div class="app-header">
                 <div class="brand">
                     <div class="brand-mark">Z</div>
                     <div class="brand-copy">
                         <div class="brand-title-row">
                             <div class="section-title">ZHUANG-AI 修图插件</div>
-                            <div class="version-badge">1.3.6 正式版</div>
+                            <div class="version-badge">1.3.7 正式版</div>
                         </div>
                         <div class="brand-subtitle">NONLINEAR RETOUCH WORKSPACE</div>
                     </div>
@@ -1216,6 +1281,47 @@ html.global-dropdown-open sp-textarea {
                 <div class="tab" data-tab="batch" style="display: none;">批处理</div>
                 <div class="tab" data-tab="settings">设置</div>
                 <div class="tab" data-tab="logs">日志</div>
+            </div>
+
+            <div id="splashScreen" class="splash-screen">
+                <div class="module-hero splash-hero">
+                    <div>
+                        <div class="module-title">ZHUANG-AI 修图插件</div>
+                        <div class="module-desc">AI retouch workspace for Photoshop</div>
+                    </div>
+                    <div class="module-badge">1.3.7</div>
+                </div>
+
+                <div class="module-card splash-meta-card">
+                    <div class="card-title">插件信息</div>
+                    <div class="splash-meta-grid">
+                        <div class="splash-meta-item"><span>插件名</span><strong>ZHUANG-AI 修图插件</strong></div>
+                        <div class="splash-meta-item"><span>版本号</span><strong>1.3.7 正式版</strong></div>
+                        <div class="splash-meta-item"><span>作者</span><strong>庄泽 / 零柒zero</strong></div>
+                        <div class="splash-meta-item"><span>项目主页</span><strong>https://www.syyyy.online</strong></div>
+                        <div class="splash-meta-item"><span>交流群</span><strong>1103212650</strong></div>
+                    </div>
+                </div>
+
+                <div class="module-card">
+                    <div class="card-title">公告</div>
+                    <div id="homeAnnouncements" class="notice-block"><div class="info-text">正在读取公告...</div></div>
+                </div>
+
+                <div class="module-card">
+                    <div class="card-title">更新检查</div>
+                    <div id="homeUpdateInfo" class="info-text">正在检查更新...</div>
+                </div>
+
+                <div class="module-card">
+                    <div class="card-title">作者与致谢</div>
+                    <div class="notice-block">
+                        <div class="notice-section compact-credit"><strong>作者</strong>庄泽 / 零柒zero</div>
+                        <div class="notice-section compact-credit"><strong>致谢</strong>提示词参考：夏三七 / 橙子Orange<br>图片对齐算法开源作者：草鱼</div>
+                    </div>
+                </div>
+
+                <button id="btnCloseSplash" class="btn btn-primary splash-close-btn" type="button">进入插件</button>
             </div>
 
             <div class="workspace">
@@ -1420,9 +1526,8 @@ html.global-dropdown-open sp-textarea {
                     </div>
 
                     <div class="module-card settings-priority-card">
-                        <div class="card-title">1. GRS 云端生成</div>
-                        <div class="info-text">生图、图生图和对话模型共用这里的 GRS 配置；这是插件最常用也最优先的设置。</div>
                         <section class="settings-group" data-group="grs">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">1. GRS 云端生成</button>
                             <div class="settings-group-body">
                                 <div class="form-group settings-card">
                                     <label for="imgApiKey">GRS API 密钥</label>
@@ -1430,18 +1535,70 @@ html.global-dropdown-open sp-textarea {
                                     <div class="info-text">用于 Nano Banana、gpt-image-2 和 GRS 对话模型。</div>
                                 </div>
                                 <div class="form-group settings-card">
-                                    <label for="imgApiUrl">GRS API 地址</label>
-                                    <input type="text" id="imgApiUrl" placeholder="请输入API地址，例如：https://grsaiapi.com 或 https://grsai.dakka.com.cn">
-                                    <div class="info-text">仅支持 GRS 官方地址：grsaiapi.com / grsai.dakka.com.cn。</div>
+                                    <label>GRS 积分余额</label>
+                                    <div class="settings-actions"><button id="btnCheckGrsCredits" class="btn btn-secondary" type="button">查询积分余额</button></div>
+                                    <div id="grsCreditsInfo" class="info-text">未查询</div>
                                 </div>
                             </div>
                         </section>
                     </div>
 
                     <div class="module-card settings-priority-card">
-                        <div class="card-title">2. 本地 WebUI 与回写</div>
-                        <div class="info-text">如果使用 SD WebUI 或需要控制生成图回到 Photoshop 的位置，再调整下面两项。</div>
+                        <section class="settings-group" data-group="newapi">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">2. NewAPI</button>
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label for="newApiUrl">NewAPI 地址</label>
+                                    <input type="text" id="newApiUrl" placeholder="例如：https://你的NewAPI域名">
+                                    <div class="info-text">兼容 /v1/models、/v1/chat/completions、/v1/images/generations。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="newApiKey">NewAPI 密钥</label>
+                                    <input type="password" id="newApiKey" placeholder="请输入 NewAPI 密钥">
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="newApiImageMode">NewAPI 生图模式</label>
+                                    <select id="newApiImageMode" class="form-control">
+                                        <option value="auto">Auto：Images 优先，失败再 Chat</option>
+                                        <option value="images">Images API</option>
+                                        <option value="chat">Chat 多模态</option>
+                                    </select>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label>模型列表</label>
+                                    <div class="settings-actions"><button id="btnAutoFetchNewApiModels" class="btn btn-secondary" type="button">抓取 NewAPI 模型</button></div>
+                                    <div class="settings-actions-tip">拉取后会填入对话模型列表，生图可选择 NewAPI 模型。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label>NewAPI 余额</label>
+                                    <div class="settings-actions"><button id="btnCheckNewApiCredits" class="btn btn-secondary" type="button">查询 NewAPI 余额</button></div>
+                                    <div id="newApiCreditsInfo" class="info-text">未查询</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
+                        <section class="settings-group" data-group="server">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">3. 公告与更新</button>
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label>公告后台</label>
+                                    <div id="serverStatusInfo" class="info-text">公告固定从服务器后台读取：https://www.syyyy.online</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label>公告与更新</label>
+                                    <div class="settings-actions"><button id="btnRefreshAnnouncements" class="btn btn-secondary" type="button">刷新公告</button><button id="btnCheckUpdate" class="btn btn-secondary" type="button">检查更新</button></div>
+                                    <div id="serverUpdateInfo" class="info-text">未检查更新</div>
+                                    <div id="serverAnnouncements" class="notice-block"><div class="info-text">暂无公告</div></div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
                         <section class="settings-group" data-group="other">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">4. 本地 WebUI 与回写</button>
                             <div class="settings-group-body">
                                 <div class="form-group settings-card">
                                     <label for="sdApiUrl">SD WebUI API 地址</label>
@@ -1466,56 +1623,7 @@ html.global-dropdown-open sp-textarea {
                         <button id="btnSaveSettings" class="btn btn-success">保存全部设置</button>
                     </div>
 
-                    <div class="module-card settings-help-card">
-                        <div class="card-title">说明与版本</div>
-                        <div class="notice-block"><div class="notice-section"><strong>插件信息</strong>
-插件咨询请QQ私聊 庄泽：3921209139
-GRSAI API网站：https://www.grsaicn.com/</div>
-<div class="notice-divider"></div>
-<div class="notice-section"><strong>使用说明</strong>
-图片出现变形再次计算即可
-⚠️ 免责：本插件仅供合法图像后期处理使用。
-作者不对用户生成内容承担责任。使用即表示同意条款。</div>
-<div class="notice-divider"></div>
-<div class="notice-section"><strong>作者与鸣谢</strong>
-插件作者：庄泽/零柒zero
-提示词参考：夏三七/橙子Orange
-图片对齐算法开源作者：草鱼
-下载插件请联系作者QQ:3921209139
-如果你是从任何渠道付费获取本插件的话，请立即举报商家
-本插件完全免费</div>
-<div class="notice-divider"></div>
-<div class="notice-section"><strong>版本历史</strong>
-<strong>1.3.6 正式版（2026-05-14）</strong>
-1. 修复 ZHUANG-AI mini 文字对话，兼容 GRS /v1/chat/completions 接口。
-2. mini 对话模型名不再附加 grs/ 前缀，改为发送纯文本消息 payload。
-3. 优化 mini 对话响应解析，兼容多种 choices / message / content 返回结构。
-4. 修复 mini 本地设置读取异常，localStorage 解析失败时自动回退默认配置。
-5. 更新 mini Service Worker 缓存到 v2，减少旧缓存导致的页面不刷新问题。
-6. 修复 Photoshop 插件内 GRS 对话路由与旧密钥兼容问题。
-7. 恢复插件多轮文字对话、选区图文上下文和错误提示显示。
-8. 同步项目目录重组：插件源文件、mini 源文件、GitHub 官网与发布内容分离管理。
-9. 更新干净的 Photoshop Plug-ins 安装 ZIP，避免发布包混入开发目录或缓存文件。
-<strong>1.3.5 正式版（2026-05-12）</strong>
-1. 新增图生图多参考图功能：主图与参考图分离，最多支持 4 张参考图。
-2. 参考图支持从 Photoshop 当前选区添加、缩略图预览、删除，并随 GRS 图生图请求一起发送。
-3. 参考图可随预设保存/加载，也会随批处理任务保留，避免排队后丢失参考图上下文。
-4. 调整生图界面布局：生成图像与添加到批处理并排，读取选区与添加参考图并排，移除清空参考图按钮。
-5. 修复参考图槽位在 Photoshop UXP 中不显示的问题，改为更稳定的固定尺寸 flex 缩略图布局。
-6. 优化伪下拉框层级，打开下拉时隐藏原生文本输入框，避免输入框覆盖下拉面板。
-7. 修复智能对齐会调用 resizeImage 改变当前 Photoshop 文档/画布尺寸的问题；普通对齐不再改变画布大小。
-8. 新增“缩放图层到选区”对齐选项，需要回图严格贴合选区时可手动启用。
-9. 同步更新打包目录 dist，确保开发版与安装包内容一致。
-10. 接入 GRS /v1/chat/completions 文字生成接口，对话功能统一使用 GRS API 密钥。
-11. 清理文字生成界面的 OpenAI、NewAPI、Google 等非 GRS 模型入口，仅保留 GRS 模型。
-12. 更新 GRS 对话模型：gpt-5.4、gpt-5.5、gemini-3-pro、gemini-3.1-pro、gemini-2.5-pro。
-13. 支持对话读取 Photoshop 选区后进行图文问答，发送格式兼容 GRS 多模态消息。
-14. 调整生图预设区域顺序：预设分组/预设选择位于提示词上方，预设名称与保存/删除按钮位于提示词下方。
-15. 移除左侧悬浮修图工具栏及相关预留空白，恢复整体界面居中布局。
-16. 修复移除悬浮窗后导致的 CSS 未闭合问题，恢复 Photoshop UXP 面板样式渲染。
-17. 优化窄面板下的容器间距，减少左侧空白与横向挤压。
-18. 同步更新打包目录 dist，确保开发版与安装包内容一致。</div></div>
-                    </div>
+
                 </div>
 
                 <div id="logs" class="tab-content">

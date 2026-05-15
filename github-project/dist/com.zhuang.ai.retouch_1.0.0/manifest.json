@@ -2,7 +2,7 @@
   "manifestVersion": 5,
   "id": "com.zhuang.ai.retouch",
   "name": "ZHUANG-AI 修图插件",
-  "version": "1.3.6",
+  "version": "1.3.7",
   "main": "index.html",
   "icons": [
     {

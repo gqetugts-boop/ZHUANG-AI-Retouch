@@ -27,6 +27,9 @@
         console.info.apply(console, arguments);
     }
 
+    const DEFAULT_SERVER_API_URL = "https://www.syyyy.online";
+    const SERVER_API_URL = DEFAULT_SERVER_API_URL;
+    const PLUGIN_VERSION = "1.3.7";
     const TEXT_INPUT_SELECTOR = [
         'textarea',
         'sp-textarea',
@@ -65,47 +68,17 @@
     }
 
     function initTextInputLengthLimitRemoval() {
-        removeAllTextInputLengthLimits(document);
-        setTimeout(function() { removeAllTextInputLengthLimits(document); }, 500);
-        setTimeout(function() { removeAllTextInputLengthLimits(document); }, 1500);
+        if (!document.documentElement.dataset.textInputLimitBound) {
+            document.addEventListener('focusin', function(event) {
+                removeAllTextInputLengthLimits(event.target);
+            }, true);
 
-        document.addEventListener('focusin', function(event) {
-            removeAllTextInputLengthLimits(event.target);
-        }, true);
-
-        document.addEventListener('input', function(event) {
-            removeAllTextInputLengthLimits(event.target);
-        }, true);
-
-        if (window.MutationObserver && document.body) {
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes') {
-                        removeTextInputLengthLimit(mutation.target);
-                        return;
-                    }
-
-                    mutation.addedNodes.forEach(function(node) {
-                        if (node && node.nodeType === 1) {
-                            removeAllTextInputLengthLimits(node);
-                        }
-                    });
-                });
-            });
-
-            observer.observe(document.body, {
-                attributes: true,
-                attributeFilter: ['maxlength'],
-                childList: true,
-                subtree: true
-            });
+            document.documentElement.dataset.textInputLimitBound = '1';
         }
     }
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initTextInputLengthLimitRemoval, { once: true });
-    } else {
-        initTextInputLengthLimitRemoval();
     }
 
     const DEFAULT_IMAGE_MODELS = [];
@@ -131,6 +104,7 @@
         'promptPreset',
         'imageCount',
         'alignmentMode',
+        'newApiImageMode',
         'sdModel',
         'loraModel',
         'webuiPreset',
@@ -190,6 +164,7 @@
     let currentNewApiChatModels = [];
     let logSearchTimer = null;
     let uxpFs = null;
+    const CHAT_MEMORY_ROUNDS = 8;
     const customSelectRegistry = new Map();
     
     // Photoshop API对象
@@ -205,6 +180,7 @@
     
     // ⚡️ 核心：调用 PS 原生底层 AI 引擎 (Nano Banana)
     async function executeNativeAIPreset(promptText) {
+        initCompatibility();
         const timestamp = new Date().toLocaleString('zh-CN');
         const model = 'PS 原生 Nano Banana Pro';
         
@@ -386,6 +362,9 @@
 
     // 初始化兼容性检查
     function initCompatibility() {
+        if (compatibility.isUXPAvailable || psAPI.isAvailable) {
+            return true;
+        }
         try {
             // 尝试加载UXP模块
             psAPI.uxp = require("uxp");
@@ -414,21 +393,17 @@
             compatibility.features.selection = true;
             compatibility.features.imageProcessing = true;
             compatibility.features.fileSystem = true;
-            
+            return true;
+
         } catch (e) {
             debugLog("UXP模块加载失败，Photoshop功能将不可用:", e);
             psAPI.isAvailable = false;
             compatibility.isUXPAvailable = false;
-            
-            // 添加友好的错误提示
-            setTimeout(() => {
-                showStatus('Photoshop API不可用，部分功能可能受限。请确保使用支持UXP的Photoshop版本。', 'error');
-            }, 1000);
+            return false;
         }
     }
 
-    // 初始化
-    initCompatibility();
+    // Photoshop API 在真正调用 PS 功能时再初始化，避免 UXP 加载阶段超时
 
     function getModelName(modelValue) {
         if (!modelValue) return 'gemini-2.0-flash-exp';
@@ -498,12 +473,13 @@
     }
 
     function normalizeChatModelValue(modelValue) {
-        const parsed = parseModelSelection(modelValue);
+        const parsed = parseModelSelection(modelValue || DEFAULT_GRS_CHAT_MODEL);
         const modelName = parsed.model || getModelName(DEFAULT_GRS_CHAT_MODEL);
-        const availableModel = GRS_CHAT_MODEL_DEFAULT_OPTIONS.some(function(option) {
-            return option.value === modelName;
-        }) ? modelName : getModelName(DEFAULT_GRS_CHAT_MODEL);
-        return buildModelValue('grs', availableModel);
+        const provider = parsed.provider || 'grs';
+        if (isNewApiProvider(provider) || provider === 'newapi') {
+            return buildModelValue(provider, modelName);
+        }
+        return buildModelValue('grs', modelName);
     }
 
     function getChatOptionKey(provider, modelName) {
@@ -594,7 +570,7 @@
 
     function isNewApiProvider(provider) {
         const providerKey = String(provider || '').toLowerCase();
-        return providerKey === 'newapi-openai' || providerKey === 'newapi-gemini';
+        return providerKey === 'newapi' || providerKey === 'newapi-openai' || providerKey === 'newapi-gemini';
     }
 
     function isGeminiModel(modelValue) {
@@ -908,11 +884,22 @@
         const safeSettings = settings || {};
         const parsed = parseModelSelection(modelValue || DEFAULT_GRS_CHAT_MODEL);
         const modelName = parsed.model || getModelName(DEFAULT_GRS_CHAT_MODEL);
+        const provider = parsed.provider || 'grs';
+
+        if (isNewApiProvider(provider)) {
+            return {
+                provider: provider,
+                model: modelName,
+                apiKey: safeSettings.newApiKey || '',
+                baseUrl: getNewApiBaseUrlFromSettings(safeSettings),
+                missingKeyMessage: '请先在设置中配置 NewAPI 地址和密钥'
+            };
+        }
 
         return {
             provider: 'grs',
             model: modelName,
-            apiKey: safeSettings.imgApiKey || '',
+            apiKey: safeSettings.imgApiKey || safeSettings.chatApiKey || '',
             baseUrl: getGrsDrawBaseUrlFromSettings(safeSettings),
             missingKeyMessage: '请先在设置中配置 GRS API 密钥'
         };
@@ -922,6 +909,9 @@
         const route = resolveChatApiRouting(modelValue, settings);
         if (!route.apiKey) {
             return { valid: false, message: route.missingKeyMessage || '缺少API密钥' };
+        }
+        if (isNewApiProvider(route.provider) && !route.baseUrl) {
+            return { valid: false, message: '请先在设置中配置 NewAPI 地址' };
         }
         return { valid: true, route: route };
     }
@@ -994,6 +984,7 @@
     }
 
     async function getSelectionBoundsInPixels() {
+        initCompatibility();
         const doc = psAPI.app.activeDocument;
         if (!doc || !doc.selection || !doc.selection.bounds) return null;
 
@@ -1098,6 +1089,7 @@
     }
 
     async function getImageDataToBase64(bounds) {
+        initCompatibility();
         if (!psAPI.core) {
             return "";
         }
@@ -1337,7 +1329,226 @@
 
             return { error: '请求失败，已达到最大重试次数' };
         },
+
+        async chatNewApi(options) {
+            const apiKey = normalizeApiKey(options.apiKey);
+            const baseUrl = normalizeBaseUrl(options.baseUrl, '');
+            if (!apiKey) return { error: 'NewAPI密钥无效，请检查您的API密钥设置' };
+            if (!baseUrl) return { error: 'NewAPI地址无效，请先在设置中填写NewAPI地址' };
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 180000);
+                if (options.abortSignal) {
+                    options.abortSignal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
+
+                let response;
+                try {
+                    response = await fetch(joinApiUrl(baseUrl, '/v1/chat/completions'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + apiKey
+                        },
+                        body: JSON.stringify({
+                            model: getModelName(options.model),
+                            stream: false,
+                            messages: Array.isArray(options.messages) && options.messages.length ? options.messages : [
+                                { role: 'user', content: options.prompt || '' }
+                            ]
+                        }),
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    return { error: 'NewAPI请求失败: ' + response.status + ' - ' + errorText };
+                }
+
+                return { success: true, data: await response.json() };
+            } catch (e) {
+                return { error: e.name === 'AbortError' ? '请求已取消' : e.message };
+            }
+        },
+
+        async generateImageNewApiImages(options) {
+            const apiKey = normalizeApiKey(options.apiKey);
+            const baseUrl = normalizeBaseUrl(options.baseUrl, '');
+            if (!apiKey) return { error: 'NewAPI密钥无效，请检查您的API密钥设置' };
+            if (!baseUrl) return { error: 'NewAPI地址无效，请先在设置中填写NewAPI地址' };
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 180000);
+                if (options.abortSignal) {
+                    options.abortSignal.addEventListener('abort', () => controller.abort(), { once: true });
+                }
+
+                let response;
+                try {
+                    response = await fetch(joinApiUrl(baseUrl, '/v1/images/generations'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + apiKey
+                        },
+                        body: JSON.stringify({
+                            model: getModelName(options.model),
+                            prompt: options.prompt || '',
+                            size: options.size || '1024x1024',
+                            n: options.n || 1
+                        }),
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    return { error: 'NewAPI Images请求失败: ' + response.status + ' - ' + errorText };
+                }
+
+                return { success: true, data: await response.json() };
+            } catch (e) {
+                return { error: e.name === 'AbortError' ? '请求已取消' : e.message };
+            }
+        },
+
+        async generateImageNewApiChat(options) {
+            const images = []
+                .concat(options.imageBase64 ? [options.imageBase64] : [])
+                .concat(Array.isArray(options.referenceImages) ? options.referenceImages.map(normalizeReferenceImageData).filter(Boolean) : []);
+            const content = [{ type: 'text', text: options.prompt || '' }].concat(images.map(function(image) {
+                return { type: 'image_url', image_url: { url: image } };
+            }));
+            return API.chatNewApi(Object.assign({}, options, {
+                messages: [{ role: 'user', content: content }]
+            }));
+        },
         
+        async checkNewApiCredits(options) {
+            const apiKey = normalizeApiKey(options && options.apiKey);
+            const baseUrl = normalizeBaseUrl(options && options.baseUrl, '');
+            if (!baseUrl) {
+                return { success: false, error: '请先填写 NewAPI 地址' };
+            }
+            if (!apiKey) {
+                return { success: false, error: '请先填写 NewAPI 密钥' };
+            }
+            const paths = ['/dashboard/billing/credit_grants', '/v1/dashboard/billing/credit_grants', '/api/user/self'];
+            let lastError = '';
+            for (let i = 0; i < paths.length; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 12000);
+                    let response;
+                    try {
+                        response = await fetch(joinApiUrl(baseUrl, paths[i]), {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                                'Authorization': 'Bearer ' + apiKey
+                            },
+                            signal: controller.signal
+                        });
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                    if (!response.ok) {
+                        lastError = '余额查询失败: ' + response.status;
+                        continue;
+                    }
+                    return { success: true, data: await response.json(), path: paths[i] };
+                } catch (e) {
+                    lastError = e.name === 'AbortError' ? '余额查询超时' : e.message;
+                }
+            }
+            return { success: false, error: lastError || '余额查询失败' };
+        },
+
+        async checkGrsCredits(options) {
+            const apiKey = normalizeApiKey(options && options.apiKey);
+            const baseUrl = getGrsDrawBaseUrlFromSettings(options || {});
+            if (!apiKey) {
+                return { success: false, error: '请先填写 GRS API 密钥' };
+            }
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+                let response;
+                try {
+                    response = await fetch(joinApiUrl(baseUrl, '/client/openapi/getAPIKeyCredits'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': 'Bearer ' + apiKey,
+                            'x-api-key': apiKey
+                        },
+                        body: JSON.stringify({ apiKey: apiKey, key: apiKey }),
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+                if (!response.ok) {
+                    return { success: false, error: '积分查询失败: ' + response.status };
+                }
+                return { success: true, data: await response.json() };
+            } catch (e) {
+                return { success: false, error: e.name === 'AbortError' ? '积分查询超时' : e.message };
+            }
+        },
+
+        async getServerStatus(baseUrl) {
+            return API.fetchServerJson(baseUrl, '/api/status');
+        },
+
+        async getAnnouncements(baseUrl) {
+            return API.fetchServerJson(baseUrl, '/api/announcements');
+        },
+
+        async getProjectContent(baseUrl) {
+            return API.fetchServerJson(baseUrl, '/api/content/project');
+        },
+
+        async getVersion(baseUrl) {
+            return API.fetchServerJson(baseUrl, '/api/version');
+        },
+
+        async checkUpdate(baseUrl, currentVersion) {
+            return API.fetchServerJson(baseUrl, '/api/check-update?version=' + encodeURIComponent(currentVersion || PLUGIN_VERSION));
+        },
+
+        async fetchServerJson(baseUrl, path) {
+            const normalizedBaseUrl = normalizeBaseUrl(baseUrl, DEFAULT_SERVER_API_URL);
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 12000);
+                let response;
+                try {
+                    response = await fetch(joinApiUrl(normalizedBaseUrl, path), {
+                        method: 'GET',
+                        headers: { 'Accept': 'application/json' },
+                        signal: controller.signal
+                    });
+                } finally {
+                    clearTimeout(timeoutId);
+                }
+                if (!response.ok) {
+                    return { success: false, error: '服务器请求失败: ' + response.status };
+                }
+                return { success: true, data: await response.json() };
+            } catch (e) {
+                return { success: false, error: e.name === 'AbortError' ? '服务器连接超时' : e.message };
+            }
+        },
+
         async generateImageGoogle(options) {
             const maxRetries = 3;
             let retryCount = 0;
@@ -1576,6 +1787,34 @@
                         options.imageResolution || options.imageSize
                     );
 
+                    if (isNewApiProvider(requestedProvider)) {
+                        const imageMode = (options.newApiImageMode || (currentSettings && currentSettings.newApiImageMode) || 'auto').toLowerCase();
+                        const imagesResult = imageMode === 'chat'
+                            ? { error: 'skip images api' }
+                            : await API.generateImageNewApiImages(Object.assign({}, options, {
+                                apiKey: apiKey,
+                                baseUrl: options.baseUrl,
+                                model: model,
+                                size: imageConfig.size && imageConfig.size !== 'auto' ? imageConfig.size : '1024x1024'
+                            }));
+
+                        if (imagesResult.success && extractImageFromResponse(imagesResult.data)) {
+                            return imagesResult;
+                        }
+                        if (imageMode === 'images') {
+                            return imagesResult;
+                        }
+
+                        return API.generateImageNewApiChat(Object.assign({}, options, {
+                            apiKey: apiKey,
+                            baseUrl: options.baseUrl,
+                            model: model,
+                            prompt: prompt,
+                            imageBase64: imageBase64,
+                            referenceImages: referenceImages
+                        }));
+                    }
+
                     let url;
                     let body;
                     let shouldPollGrsResult = false;
@@ -1628,7 +1867,7 @@
                         body = {
                             model: model,
                             stream: false,
-                            messages: [
+                            messages: Array.isArray(options.messages) && options.messages.length ? options.messages : [
                                 {
                                     role: "user",
                                     content: prompt
@@ -1636,7 +1875,7 @@
                             ]
                         };
 
-                        if (requestImages.length) {
+                        if ((!options.messages || !options.messages.length) && requestImages.length) {
                             body.messages[0].content = [
                                 {
                                     type: "text",
@@ -1652,7 +1891,7 @@
                             }));
                         }
                     } else {
-                        throw new Error('当前模型不受支持。仅支持 GRS 文字生成或 GRS 图像生成模型');
+                        throw new Error('当前模型不受支持。仅支持 GRS 或 NewAPI 模型');
                     }
                     
                     const controller = new AbortController();
@@ -2066,18 +2305,26 @@
             console.error('未找到内容区域:', tabId);
         }
 
+        if (tabId === 'home') {
+            refreshAnnouncements();
+            checkForUpdates(false);
+        }
+
         if (tabId === 'webui') {
+            initWebUI();
             ensureWebUIParameterControlsVisible();
         }
 
         if (tabId === 'img2img') {
             ensureImg2ImgInlineControls();
             ensurePresetActionButtons();
+            ensurePresetsLoaded().catch(function(error) {
+                console.error('加载预设失败:', error);
+            });
         }
 
         if (tabId === 'settings') {
             ensureSettingsUiCompatibility();
-            ensureSettingsSectionsGrouped();
             bindSettingsGroupToggles();
             ensureSettingsModelActionsVisible();
             bindModelActionButtons();
@@ -2100,6 +2347,7 @@
             imgApiUrl: GRS_DEFAULT_BASE_URL,
             newApiUrl: "",
             newApiKey: "",
+            newApiImageMode: "auto",
             googleApiKey: "",
             googleAiEnabled: true,
             sdApiUrl: "http://localhost:7860",
@@ -2112,8 +2360,12 @@
         }, storedSettings);
 
         currentSettings.chatApiUrl = OPENAI_OFFICIAL_BASE_URL;
+        if (!currentSettings.imgApiKey && currentSettings.chatApiKey) {
+            currentSettings.imgApiKey = currentSettings.chatApiKey;
+        }
         currentSettings.imgApiUrl = normalizeGrsBaseUrlStrict(currentSettings.imgApiUrl);
         currentSettings.newApiUrl = normalizeBaseUrl(currentSettings.newApiUrl, '');
+        currentSettings.newApiImageMode = ['auto', 'images', 'chat'].indexOf(currentSettings.newApiImageMode) > -1 ? currentSettings.newApiImageMode : 'auto';
         currentSettings.chatModel = normalizeChatModelValue(currentSettings.chatModel || currentSettings.model || DEFAULT_GRS_CHAT_MODEL);
 
         // 兼容旧版本默认值：历史配置为 nano-banana-pro 时自动迁移到 PS 原生模型
@@ -2126,9 +2378,6 @@
         }
 
         if (currentSettings) {
-            ensureImg2ImgInlineControls();
-            ensurePresetActionButtons();
-
             const chatApiKeyEl = document.getElementById('chatApiKey');
             if (chatApiKeyEl) {
                 chatApiKeyEl.value = currentSettings.chatApiKey || '';
@@ -2158,7 +2407,12 @@
             if (newApiKeyEl) {
                 newApiKeyEl.value = currentSettings.newApiKey || '';
             }
-            
+
+            const newApiImageModeEl = document.getElementById('newApiImageMode');
+            if (newApiImageModeEl) {
+                newApiImageModeEl.value = currentSettings.newApiImageMode || 'auto';
+            }
+
             const sdApiUrlEl = document.getElementById('sdApiUrl');
             if (sdApiUrlEl) {
                 sdApiUrlEl.value = currentSettings.sdApiUrl || 'http://localhost:7860';
@@ -2251,15 +2505,49 @@
         
         // 应用文字大小设置
         applyTextSizeMultiplier(currentSettings.textSizeMultiplier || 1);
-        
-        await loadPresets();
-        
+
+        loadPresetCategories([]);
+        updatePresetSelect([]);
+
         // 初始化时更新预览比例
         const currentImgModelEl = document.getElementById('imgModel');
         updatePreviewAspectByModel(currentImgModelEl ? currentImgModelEl.value : '');
     }
-    
 
+
+
+    let presetsLoadPromise = null;
+    let presetsLoaded = false;
+
+    async function ensurePresetsLoaded() {
+        if (presetsLoaded) return currentAllPresets;
+        if (!presetsLoadPromise) {
+            presetsLoadPromise = loadPresets().finally(function() {
+                presetsLoadPromise = null;
+            });
+        }
+        await presetsLoadPromise;
+        presetsLoaded = true;
+        return currentAllPresets;
+    }
+
+    function invalidatePresetCache() {
+        presetsLoaded = false;
+        presetsLoadPromise = null;
+    }
+
+    function scheduleDeferredStartupWork() {
+        setTimeout(function() {
+            initFakeSelects();
+            FAKE_SELECT_IDS.forEach(refreshCustomSelectById);
+            bindModelActionButtons();
+        }, 800);
+
+        setTimeout(function() {
+            refreshAnnouncements();
+            checkForUpdates(false);
+        }, 1200);
+    }
 
     // 使用异步函数来读取 yushe.json
     async function loadYushePresets() {
@@ -2721,10 +3009,12 @@
                 if (!saved) {
                     throw new Error('写入 yushe.json 失败');
                 }
+                invalidatePresetCache();
             } else {
                 Config.savePreset(presetName, prompt, presetCategory, referenceImages);
+                invalidatePresetCache();
             }
-            await loadPresets();
+            await ensurePresetsLoaded();
 
             const presetSelect = document.getElementById('promptPreset');
             if (presetSelect) {
@@ -2757,12 +3047,14 @@
                 if (!saved) {
                     throw new Error('写入 yushe.json 失败');
                 }
+                invalidatePresetCache();
             } else {
                 Config.deletePreset(selectedName);
+                invalidatePresetCache();
             }
-            
+
             // 重新加载预设
-            await loadPresets();
+            await ensurePresetsLoaded();
             showStatus('预设已删除', 'success');
             showToast('预设已删除');
         } catch (e) {
@@ -2772,6 +3064,7 @@
     }
     
     async function applyPreset() {
+        await ensurePresetsLoaded();
         const presetSelect = document.getElementById('promptPreset');
         const selectedName = presetSelect.value;
 
@@ -2790,11 +3083,205 @@
         }
     }
 
+    function renderAnnouncements(announcements) {
+        const containers = ['serverAnnouncements', 'homeAnnouncements']
+            .map(function(id) { return document.getElementById(id); })
+            .filter(Boolean);
+        if (!containers.length) return;
+        const list = Array.isArray(announcements) ? announcements : [];
+        const html = !list.length
+            ? '<div class="info-text">暂无公告</div>'
+            : list.slice(0, 5).map(function(item) {
+                return '<div class="notice-section"><strong>' + escapeHTML(item.title || '公告') + '</strong>'
+                    + escapeHTML(item.content || '')
+                    + (item.publishAt ? '<div class="info-text">' + escapeHTML(item.publishAt) + '</div>' : '')
+                    + '</div>';
+            }).join('<div class="notice-divider"></div>');
+        containers.forEach(function(container) {
+            container.innerHTML = html;
+        });
+    }
+
+    function renderUpdateInfo(updateData) {
+        const containers = ['serverUpdateInfo', 'homeUpdateInfo']
+            .map(function(id) { return document.getElementById(id); })
+            .filter(Boolean);
+        if (!containers.length) return;
+        let html = '';
+        if (!updateData) {
+            html = '未检查更新';
+        } else if (updateData.needsUpdate) {
+            html = '发现新版本：' + escapeHTML(updateData.latestVersion || '')
+                + '<br>' + escapeHTML((updateData.changelog || []).join(' / '));
+        } else {
+            html = '当前已是最新版本：' + (updateData.currentVersion || PLUGIN_VERSION);
+        }
+        containers.forEach(function(container) {
+            container.innerHTML = html;
+        });
+    }
+
+    async function refreshAnnouncements() {
+        const baseUrl = getServerApiUrlFromSettings();
+        const result = await API.getAnnouncements(baseUrl);
+        if (result.success && result.data && result.data.success !== false) {
+            renderAnnouncements(result.data.announcements || []);
+            return true;
+        }
+        renderAnnouncements([]);
+        return false;
+    }
+
+    async function checkForUpdates(showResult) {
+        const baseUrl = getServerApiUrlFromSettings();
+        const result = await API.checkUpdate(baseUrl, PLUGIN_VERSION);
+        if (result.success && result.data && result.data.success !== false) {
+            renderUpdateInfo(result.data);
+            if (showResult) {
+                showStatus(result.data.needsUpdate ? '发现新版本：' + result.data.latestVersion : '当前已是最新版本', result.data.needsUpdate ? 'info' : 'success');
+            }
+            return true;
+        }
+        if (showResult) showStatus('检查更新失败：' + (result.error || '服务器不可用'), 'error');
+        return false;
+    }
+
+    async function refreshServerStatus() {
+        const statusEl = document.getElementById('serverStatusInfo');
+        const result = await API.getServerStatus(getServerApiUrlFromSettings());
+        if (statusEl) {
+            statusEl.textContent = result.success && result.data
+                ? '服务器正常，版本：' + (result.data.version || 'unknown')
+                : '服务器不可用';
+        }
+    }
+
+    function getServerApiUrlFromSettings() {
+        return normalizeBaseUrl(SERVER_API_URL, DEFAULT_SERVER_API_URL);
+    }
+
+    function scheduleServerChecks() {
+        setTimeout(function() {
+            refreshServerStatus();
+            refreshAnnouncements();
+            checkForUpdates(false);
+        }, 1800);
+    }
+
+    function extractNewApiCredits(data) {
+        if (!data || typeof data !== 'object') return null;
+        const candidates = [
+            data.total_available,
+            data.total_granted,
+            data.credit,
+            data.credits,
+            data.quota,
+            data.used_quota !== undefined && data.quota !== undefined ? data.quota - data.used_quota : null,
+            data.data && data.data.total_available,
+            data.data && data.data.total_granted,
+            data.data && data.data.credit,
+            data.data && data.data.credits,
+            data.data && data.data.quota,
+            data.data && data.data.used_quota !== undefined && data.data.quota !== undefined ? data.data.quota - data.data.used_quota : null,
+            data.user && data.user.quota,
+            data.user && data.user.credit,
+            data.user && data.user.credits
+        ];
+        for (let i = 0; i < candidates.length; i++) {
+            const value = candidates[i];
+            if (value !== null && value !== undefined && value !== '' && !Number.isNaN(Number(value))) {
+                return Number(value);
+            }
+        }
+        return null;
+    }
+
+    async function checkNewApiCredits() {
+        const infoEl = document.getElementById('newApiCreditsInfo');
+        const keyEl = document.getElementById('newApiKey');
+        const urlEl = document.getElementById('newApiUrl');
+        const baseUrl = normalizeBaseUrl(urlEl ? urlEl.value : (currentSettings && currentSettings.newApiUrl), '');
+        const apiKey = keyEl ? keyEl.value : (currentSettings && currentSettings.newApiKey);
+        if (infoEl) infoEl.textContent = '正在查询...';
+        const result = await API.checkNewApiCredits({ apiKey: apiKey, baseUrl: baseUrl });
+        if (!result.success) {
+            if (infoEl) infoEl.textContent = result.error || '查询失败';
+            showStatus(result.error || '查询失败', 'error');
+            return false;
+        }
+        const credits = extractNewApiCredits(result.data);
+        const text = credits === null ? '查询成功，请在控制台查看返回数据' : '当前余额：' + credits;
+        if (infoEl) infoEl.textContent = text;
+        showStatus(text, credits === null ? 'info' : 'success');
+        if (credits === null) {
+            console.log('NewAPI 余额返回数据:', result.data);
+        }
+        return true;
+    }
+
+    async function checkGrsCredits() {
+        const infoEl = document.getElementById('grsCreditsInfo');
+        const keyEl = document.getElementById('imgApiKey');
+        const urlEl = document.getElementById('imgApiUrl');
+        if (infoEl) infoEl.textContent = '正在查询...';
+        const result = await API.checkGrsCredits({
+            apiKey: keyEl ? keyEl.value : (currentSettings && currentSettings.imgApiKey),
+            imgApiUrl: urlEl ? urlEl.value : (currentSettings && currentSettings.imgApiUrl)
+        });
+        if (!result.success) {
+            if (infoEl) infoEl.textContent = result.error || '查询失败';
+            showStatus(result.error || '查询失败', 'error');
+            return false;
+        }
+        const responseData = result.data || {};
+        const hasError = responseData.code !== undefined && responseData.code !== 0;
+        const hasErrorMessage = responseData.msg && typeof responseData.msg === 'string' && responseData.msg.trim() !== '' && responseData.msg.trim().toLowerCase() !== 'success';
+        if (hasError || hasErrorMessage) {
+            const message = responseData.msg || '查询失败';
+            if (infoEl) infoEl.textContent = message;
+            showStatus(message, 'error');
+            return false;
+        }
+        const credits = responseData.data && responseData.data.credits !== undefined ? responseData.data.credits : 0;
+        if (infoEl) infoEl.textContent = '当前积分余额：' + credits;
+        showStatus('当前积分余额：' + credits, 'success');
+        return true;
+    }
+
     function bindModelActionButtons() {
         const btnAutoFetchNewApiModels = document.getElementById('btnAutoFetchNewApiModels');
         if (btnAutoFetchNewApiModels) {
             btnAutoFetchNewApiModels.onclick = function () {
                 fetchNewApiModelsAndFillChat();
+            };
+        }
+
+        const btnCheckNewApiCredits = document.getElementById('btnCheckNewApiCredits');
+        if (btnCheckNewApiCredits) {
+            btnCheckNewApiCredits.onclick = function() {
+                checkNewApiCredits();
+            };
+        }
+
+        const btnCheckGrsCredits = document.getElementById('btnCheckGrsCredits');
+        if (btnCheckGrsCredits) {
+            btnCheckGrsCredits.onclick = function() {
+                checkGrsCredits();
+            };
+        }
+
+        const btnRefreshAnnouncements = document.getElementById('btnRefreshAnnouncements');
+        if (btnRefreshAnnouncements) {
+            btnRefreshAnnouncements.onclick = function() {
+                refreshAnnouncements();
+                refreshServerStatus();
+            };
+        }
+
+        const btnCheckUpdate = document.getElementById('btnCheckUpdate');
+        if (btnCheckUpdate) {
+            btnCheckUpdate.onclick = function() {
+                checkForUpdates(true);
             };
         }
     }
@@ -2876,7 +3363,7 @@
             if (!node || !node.querySelector) return null;
             if (node.querySelector('#imgApiUrl, #imgApiKey')) return 'grs';
             if (node.querySelector('#chatApiUrl, #chatApiKey')) return 'openai';
-            if (node.querySelector('#newApiUrl, #newApiKey, #btnAutoFetchNewApiModels')) return 'newapi';
+            if (node.querySelector('#newApiUrl, #newApiKey, #btnAutoFetchNewApiModels, #btnRefreshAnnouncements, #btnCheckUpdate')) return 'newapi';
             if (node.querySelector('#googleApiKey, #sdApiUrl, #alignmentMode')) return 'other';
             return null;
         }
@@ -2957,7 +3444,6 @@
     function bindSettingsGroupToggles() {
         const settingsTab = document.getElementById('settings');
         if (!settingsTab) return;
-        if (settingsTab.classList.contains('settings-redesigned')) return;
 
         const toggles = settingsTab.querySelectorAll('.settings-group-toggle');
         toggles.forEach(function(toggle) {
@@ -3414,9 +3900,6 @@
     
     function setupEventListeners() {
         debugLog('开始设置事件监听器...');
-        ensureImg2ImgInlineControls();
-        ensurePresetActionButtons();
-        
         const btnRefreshUi = document.getElementById('btnRefreshUi');
         if (btnRefreshUi) {
             btnRefreshUi.onclick = function() {
@@ -3425,6 +3908,17 @@
                 ensureSettingsUiCompatibility();
                 updateLogDisplay();
                 showToast('界面已刷新');
+            };
+        }
+
+        const btnCloseSplash = document.getElementById('btnCloseSplash');
+        if (btnCloseSplash) {
+            btnCloseSplash.onclick = function() {
+                const shell = document.querySelector('.app-shell');
+                if (shell) {
+                    shell.classList.remove('splash-open');
+                }
+                switchTab('img2img');
             };
         }
 
@@ -3459,12 +3953,7 @@
             debugLog('绑定btnSaveSettings点击事件');
             btnSaveSettings.onclick = saveSettings;
         }
-        
-        ensureSettingsModelActionsVisible();
-        ensureSettingsSectionsGrouped();
-        bindSettingsGroupToggles();
-        bindModelActionButtons();
-        
+
         const btnChat = document.getElementById('btnChat');
         if (btnChat) {
             debugLog('绑定btnChat点击事件');
@@ -3503,7 +3992,6 @@
             debugLog('绑定btnAddReferenceImage点击事件');
             btnAddReferenceImage.onclick = addReferenceImageFromSelection;
         }
-        renderReferenceImages();
 
         const btnStartBatch = document.getElementById('btnStartBatch');
         if (btnStartBatch) {
@@ -3931,6 +4419,7 @@
     let chatSelectedImageBase64 = null;
 
     async function chatReadSelection() {
+        initCompatibility();
         if (!psAPI.app || !psAPI.core || !psAPI.imaging) {
             showStatus('UXP模块未加载', 'error');
             return;
@@ -4023,6 +4512,7 @@
     }
     
     async function img2ImgReadSelection() {
+        initCompatibility();
         if (!psAPI.app || !psAPI.core || !psAPI.imaging) {
             showStatus('UXP模块未加载', 'error');
             return;
@@ -4167,6 +4657,7 @@
     }
 
     async function captureReferenceImageFromSelection() {
+        initCompatibility();
         if (!psAPI.app || !psAPI.core || !psAPI.imaging) {
             throw new Error('UXP模块未加载');
         }
@@ -4337,11 +4828,8 @@
 
     function getNewApiChatProviderByModelName(modelName) {
         const cleanName = String(getModelName(modelName) || '').trim();
-        const lowerName = cleanName.toLowerCase();
         if (!cleanName) return '';
-        if (lowerName.includes('gemini')) return 'newapi-gemini';
-        if (lowerName.startsWith('gpt')) return 'newapi-openai';
-        return '';
+        return 'newapi';
     }
 
     function extractNewApiChatModels(rawData) {
@@ -4366,7 +4854,7 @@
             mapped.push({
                 provider: provider,
                 value: cleanName,
-                text: cleanName + (provider === 'newapi-gemini' ? ' (NewAPI Gemini)' : ' (NewAPI OpenAI)')
+                text: cleanName + ' (NewAPI)'
             });
         });
 
@@ -4406,6 +4894,11 @@
             if (isGrsChatModel(lowerName)) {
                 addChatOption('grs', cleanName, (model.displayName || model.text || cleanName) + ' (GRS)');
             }
+        });
+
+        (newApiModels || []).forEach(function(model) {
+            const provider = model.provider || 'newapi';
+            addChatOption(provider, model.value || model.name || model.id || model, model.text || ((model.value || model.name || model.id || model) + ' (NewAPI)'));
         });
 
         if (!hasValidModels) {
@@ -4633,6 +5126,7 @@
             const imgApiUrlEl = document.getElementById('imgApiUrl');
             const newApiUrlEl = document.getElementById('newApiUrl');
             const newApiKeyEl = document.getElementById('newApiKey');
+            const newApiImageModeEl = document.getElementById('newApiImageMode');
             const googleApiKeyEl = document.getElementById('googleApiKey');
             const googleAiEnabledEl = document.getElementById('googleAiEnabled');
             const sdApiUrlEl = document.getElementById('sdApiUrl');
@@ -4661,6 +5155,7 @@
             const imgApiUrl = imgApiUrlEl ? imgApiUrlEl.value.trim() : '';
             const newApiUrl = newApiUrlEl ? normalizeBaseUrl(newApiUrlEl.value.trim(), '') : '';
             const newApiKey = newApiKeyEl ? newApiKeyEl.value.trim() : '';
+            const newApiImageMode = newApiImageModeEl ? newApiImageModeEl.value : 'auto';
             const googleApiKey = googleApiKeyEl ? googleApiKeyEl.value.trim() : '';
             const googleAiEnabled = googleAiEnabledEl ? !!googleAiEnabledEl.checked : true;
             const sdApiUrl = sdApiUrlEl ? sdApiUrlEl.value.trim() : '';
@@ -4680,6 +5175,7 @@
                 imgApiKey: imgApiKey ? '***' : '',
                 newApiKey: newApiKey ? '***' : '',
                 newApiUrl: newApiUrl || '',
+                newApiImageMode: newApiImageMode,
                 googleApiKey: googleApiKey ? '***' : '',
                 googleAiEnabled: googleAiEnabled,
                 chatApiUrl: lockedChatApiUrl,
@@ -4698,6 +5194,7 @@
                 imgApiKey: imgApiKey,
                 newApiUrl: newApiUrl,
                 newApiKey: newApiKey,
+                newApiImageMode: newApiImageMode,
                 googleApiKey: googleApiKey,
                 googleAiEnabled: googleAiEnabled,
                 chatApiUrl: lockedChatApiUrl,
@@ -4725,7 +5222,10 @@
             if (chatApiUrlEl) {
                 chatApiUrlEl.value = lockedChatApiUrl;
             }
-            
+            if (newApiImageModeEl) {
+                newApiImageModeEl.value = newApiImageMode;
+            }
+
             debugLog('设置保存成功');
             showStatus('设置已保存', 'success');
             showToast('设置已保存');
@@ -4735,16 +5235,33 @@
         }
     }
 
+    function extractTextFromContentParts(content) {
+        if (typeof content === 'string') return content;
+        if (!Array.isArray(content)) return '';
+        return content.map(function(part) {
+            if (!part) return '';
+            if (typeof part === 'string') return part;
+            if (typeof part.text === 'string') return part.text;
+            if (part.content && typeof part.content.text === 'string') return part.content.text;
+            if (typeof part.content === 'string') return part.content;
+            return '';
+        }).filter(Boolean).join('\n').trim();
+    }
+
     function extractChatResponseText(responseData) {
         if (!responseData) return '';
         if (responseData.choices && responseData.choices[0]) {
             const choice = responseData.choices[0];
-            if (choice.message && typeof choice.message.content === 'string') {
-                return choice.message.content;
+            if (choice.message) {
+                const messageContent = extractTextFromContentParts(choice.message.content);
+                if (messageContent) return messageContent;
             }
-            if (choice.delta && typeof choice.delta.content === 'string') {
-                return choice.delta.content;
+            if (choice.delta) {
+                const deltaContent = extractTextFromContentParts(choice.delta.content);
+                if (deltaContent) return deltaContent;
             }
+            const choiceText = extractTextFromContentParts(choice.text || choice.content);
+            if (choiceText) return choiceText;
         }
         if (responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content && responseData.candidates[0].content.parts) {
             const parts = responseData.candidates[0].content.parts;
@@ -4754,27 +5271,68 @@
                     text += parts[i].text + '\n';
                 }
             }
-            return text.trim();
+            if (text.trim()) return text.trim();
         }
-        if (typeof responseData.content === 'string') return responseData.content;
-        if (typeof responseData.text === 'string') return responseData.text;
+        if (responseData.message) {
+            const messageText = extractTextFromContentParts(responseData.message.content || responseData.message.text);
+            if (messageText) return messageText;
+        }
+        if (responseData.data) {
+            const dataText = extractTextFromContentParts(responseData.data.text || responseData.data.content || (responseData.data.message && responseData.data.message.content));
+            if (dataText) return dataText;
+        }
+        const directText = extractTextFromContentParts(responseData.content || responseData.text || responseData.output_text);
+        if (directText) return directText;
         return '';
     }
 
+    function buildChatContextMessages(prompt, imageBase64) {
+        const text = prompt || '请描述这张图片';
+        const recentHistory = chatHistory
+            .filter(function(message) {
+                return message && (message.role === 'user' || message.role === 'assistant') && typeof message.content === 'string' && message.content.trim();
+            })
+            .slice(-(CHAT_MEMORY_ROUNDS * 2))
+            .map(function(message) {
+                return {
+                    role: message.role,
+                    content: message.content.replace(/\n\n\[已添加选区图片\]$/, '').trim()
+                };
+            })
+            .filter(function(message) {
+                return message.content;
+            });
+
+        const currentMessage = {
+            role: 'user',
+            content: text
+        };
+
+        if (imageBase64) {
+            currentMessage.content = [
+                { type: 'text', text: text },
+                { type: 'image_url', image_url: { url: imageBase64 } }
+            ];
+        }
+
+        return recentHistory.concat(currentMessage);
+    }
+
     async function chat() {
-        const prompt = document.getElementById('chatPrompt').value.trim();
-        const chatModelValue = document.getElementById('chatModel').value || (currentSettings && currentSettings.chatModel) || DEFAULT_GRS_CHAT_MODEL;
-        
+        const chatPromptEl = document.getElementById('chatPrompt');
+        const chatModelEl = document.getElementById('chatModel');
+        const prompt = chatPromptEl ? chatPromptEl.value.trim() : '';
+        const chatModelValue = (chatModelEl && chatModelEl.value) || (currentSettings && currentSettings.chatModel) || DEFAULT_GRS_CHAT_MODEL;
+
         if (!prompt && !chatSelectedImageBase64) {
             showStatus('请输入消息或读取选区', 'error');
             return;
         }
-        
-        // 保存输入的文字，以便下次按Tab键时调出
+
         if (prompt) {
             lastChatInput = prompt;
         }
-        
+
         if (!currentSettings) {
             showStatus('请先在设置中配置API密钥', 'error');
             switchTab('settings');
@@ -4789,28 +5347,27 @@
         }
 
         const chatRoute = chatRouteValidation.route;
-        
         const btn = document.getElementById('btnChat');
-        btn.disabled = true;
-        
+        if (btn) {
+            btn.disabled = true;
+        }
+
         const startTime = Date.now();
         let timerInterval;
-        
-        // 开始计时器
-        timerInterval = setInterval(() => {
-            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-            btn.innerHTML = '<span class="loading"></span>发送中... ' + elapsedTime + 's';
-        }, 1000);
-        
+
+        if (btn) {
+            timerInterval = setInterval(() => {
+                const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+                btn.innerHTML = '<span class="loading"></span>发送中... ' + elapsedTime + 's';
+            }, 1000);
+        }
+
         showStatus('正在发送消息，请稍候...', 'info');
-        
-        // 让界面先刷新
         await new Promise(resolve => requestAnimationFrame(resolve));
-        
+
         try {
             const timestamp = new Date().toLocaleString('zh-CN');
-            
-            // 添加用户消息到聊天历史
+            const messages = buildChatContextMessages(prompt, chatSelectedImageBase64);
             let displayContent = prompt || '';
             if (chatSelectedImageBase64) {
                 displayContent = (displayContent ? displayContent + '\n\n' : '') + '[已添加选区图片]';
@@ -4821,38 +5378,45 @@
                 timestamp: timestamp
             });
             updateChatHistory();
-            
-            // 清空输入框
-            const chatPrompt = document.getElementById('chatPrompt');
-            chatPrompt.value = '';
-            resizeChatPrompt();
-            
-            let result;
-            result = await API.generateImage({
-                apiKey: chatRoute.apiKey,
-                provider: chatRoute.provider,
-                baseUrl: chatRoute.baseUrl,
-                model: chatRoute.model,
-                prompt: prompt || '请描述这张图片',
-                imageBase64: chatSelectedImageBase64
-            });
-            
+
+            if (chatPromptEl) {
+                chatPromptEl.value = '';
+                resizeChatPrompt();
+            }
+
+            const result = isNewApiProvider(chatRoute.provider)
+                ? await API.chatNewApi({
+                    apiKey: chatRoute.apiKey,
+                    baseUrl: chatRoute.baseUrl,
+                    model: chatRoute.model,
+                    prompt: prompt || '请描述这张图片',
+                    messages: messages
+                })
+                : await API.generateImage({
+                    apiKey: chatRoute.apiKey,
+                    provider: chatRoute.provider,
+                    baseUrl: chatRoute.baseUrl,
+                    model: chatRoute.model,
+                    prompt: prompt || '请描述这张图片',
+                    imageBase64: chatSelectedImageBase64,
+                    messages: messages
+                });
+
             if (result.success) {
                 const responseData = result.data;
                 const responseText = extractChatResponseText(responseData);
-                
+
                 if (responseText) {
-                    // 添加助手消息到聊天历史
                     chatHistory.push({
                         role: 'assistant',
                         content: responseText,
                         timestamp: new Date().toLocaleString('zh-CN')
                     });
                     updateChatHistory();
-                    
+
                     showStatus('消息发送成功', 'success');
                     showToast('收到回复');
-                    
+
                     Config.addLog({
                         timestamp: timestamp,
                         model: chatModelValue,
@@ -4862,7 +5426,14 @@
                         response: responseText
                     });
                 } else {
-                    showStatus('发送失败：无法从响应中提取文本', 'error');
+                    const errorText = '发送失败：无法从响应中提取文本';
+                    chatHistory.push({
+                        role: 'assistant',
+                        content: errorText,
+                        timestamp: new Date().toLocaleString('zh-CN')
+                    });
+                    updateChatHistory();
+                    showStatus(errorText, 'error');
                     Config.addLog({
                         timestamp: timestamp,
                         model: chatModelValue,
@@ -4874,8 +5445,15 @@
                 }
             } else {
                 const errorMsg = result.error || '未知错误';
-                showStatus('发送失败：' + errorMsg, 'error');
-                
+                const errorText = '发送失败：' + errorMsg;
+                chatHistory.push({
+                    role: 'assistant',
+                    content: errorText,
+                    timestamp: new Date().toLocaleString('zh-CN')
+                });
+                updateChatHistory();
+                showStatus(errorText, 'error');
+
                 Config.addLog({
                     timestamp: new Date().toLocaleString('zh-CN'),
                     model: chatModelValue,
@@ -4885,16 +5463,38 @@
                     error: errorMsg
                 });
             }
+        } catch (e) {
+            const errorMsg = e && e.message ? e.message : '未知错误';
+            const errorText = '发送失败：' + errorMsg;
+            chatHistory.push({
+                role: 'assistant',
+                content: errorText,
+                timestamp: new Date().toLocaleString('zh-CN')
+            });
+            updateChatHistory();
+            showStatus(errorText, 'error');
+            Config.addLog({
+                timestamp: new Date().toLocaleString('zh-CN'),
+                model: chatModelValue,
+                prompt: prompt,
+                type: 'chat',
+                status: '失败',
+                error: errorMsg
+            });
         } finally {
-            // 清除计时器
-            clearInterval(timerInterval);
-            
-            btn.disabled = false;
-            btn.innerHTML = '发送消息';
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '发送消息';
+            }
         }
     }
 
     async function img2Img() {
+        initCompatibility();
         const btn = document.getElementById('btnImg2Img');
         if (!btn) return;
         
@@ -5083,7 +5683,9 @@
                     } else {
                         result = await API.generateImage({
                             apiKey: route.apiKey,
+                            provider: route.provider,
                             apiType: route.apiType,
+                            baseUrl: route.baseUrl,
                             model: model,
                             prompt: requestPrompt,
                             imageBase64: selectedImageBase64,
@@ -5230,6 +5832,18 @@
                             return urlMatch[0];
                         }
                     }
+                }
+            }
+
+            // 检查OpenAI内容数组格式
+            if (response.choices && response.choices[0] && response.choices[0].message && Array.isArray(response.choices[0].message.content)) {
+                const contentParts = response.choices[0].message.content;
+                for (let i = 0; i < contentParts.length; i++) {
+                    const part = contentParts[i];
+                    if (!part) continue;
+                    if (part.image_url && part.image_url.url) return part.image_url.url;
+                    if (part.type === 'image_url' && part.url) return part.url;
+                    if (part.b64_json) return 'data:image/png;base64,' + part.b64_json;
                 }
             }
 
@@ -5457,6 +6071,7 @@
     }
     
     async function downloadAndPlaceDocument(imageUrl, width, height, prompt, type, timestamp, model) {
+        initCompatibility();
         debugLog("开始处理图像...");
         debugLog("imageUrl 长度:", imageUrl ? imageUrl.length : 0);
         debugLog("imageUrl 前100字符:", imageUrl ? imageUrl.substring(0, 100) : '');
@@ -6945,9 +7560,6 @@
     }
 
     function ensureSettingsUiCompatibility() {
-        // 不再动态注入 OpenAI/NewAPI/Google 相关控件，保持简洁
-        ensureSettingsSectionsGrouped();
-        bindSettingsGroupToggles();
         ensureSettingsModelActionsVisible();
     }
 
@@ -6956,54 +7568,24 @@
     async function init() {
         debugLog('开始初始化...');
         try {
-            // 确保DOM加载完成
-            debugLog('检查DOM状态:', document.readyState);
             if (document.readyState === 'loading') {
-                debugLog('DOM正在加载，等待完成...');
-                await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve));
-                debugLog('DOM加载完成');
+                await new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve, { once: true }));
             }
 
-            ensureSettingsUiCompatibility();
             initFloatingToolbarDrag();
-
-            debugLog('开始加载设置...');
-            await loadSettings();
-            debugLog('设置加载完成');
-            
-            debugLog('开始设置事件监听器...');
-            setupEventListeners();
-            debugLog('事件监听器设置完成');
-
-            ensureSettingsSectionsGrouped();
-            bindSettingsGroupToggles();
-            ensureSettingsModelActionsVisible();
-            ensureWebUIParameterControlsVisible();
-
-            initFakeSelects(FAKE_SELECT_IDS);
-            FAKE_SELECT_IDS.forEach(function(id) {
-                refreshCustomSelectById(id);
+            loadSettings().catch(function(error) {
+                console.error('加载设置失败:', error);
+                showStatus('加载设置失败: ' + error.message, 'error');
             });
-
-            setTimeout(function() {
-                ensureSettingsSectionsGrouped();
-                bindSettingsGroupToggles();
-                ensureSettingsModelActionsVisible();
-                ensureWebUIParameterControlsVisible();
-                bindModelActionButtons();
-            }, 0);
+            setupEventListeners();
 
             const imgModelSelect = document.getElementById('imgModel');
             if (imgModelSelect && imgModelSelect.options.length === 0) {
                 fillImageModels([]);
                 imgModelSelect.selectedIndex = 0;
-                refreshCustomSelectById('imgModel');
             }
-            
-            debugLog('开始更新日志显示...');
+
             updateLogDisplay();
-            debugLog('日志显示更新完成');
-            
             debugLog('初始化完成');
         } catch (e) {
             console.error('初始化失败:', e);
@@ -7013,6 +7595,9 @@
 
     // 在UXP环境中，直接调用init()
     init();
+    setTimeout(function() {
+        scheduleDeferredStartupWork();
+    }, 2500);
     // 从SD WebUI获取大模型列表
     async function fetchSDModels() {
         try {
@@ -7685,15 +8270,6 @@
         }
     }
 
-    // 初始化WebUI
-    initWebUI();
-    ensureWebUIParameterControlsVisible();
-    ensureImg2ImgInlineControls();
-    ensurePresetActionButtons();
-    ensureSettingsSectionsGrouped();
-    bindSettingsGroupToggles();
-    ensureSettingsModelActionsVisible();
-    bindModelActionButtons();
-    initFloatingToolbarDrag();
+    // WebUI 初始化仅在切换到 WebUI 标签时执行，避免插件加载阶段超时
 
 })();
