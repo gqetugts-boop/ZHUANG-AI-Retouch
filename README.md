@@ -12,7 +12,7 @@
 
 ## 项目矩阵 / Project Suite
 
-### ZHUANG-AI 1.3.5 正式版
+### ZHUANG-AI 1.3.6 正式版
 
 当前已完成并可下载的 Photoshop UXP 插件。
 
@@ -116,9 +116,33 @@ The release package is also included in this repository:
 ## 使用教程 / Tutorial
 
 - 官网教程 / Website tutorial: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/tutorial.html
-- 本地教程 / Local tutorial: `ZHUANG-AI 1.3.5/使用教程.html`
+- 本地教程 / Local tutorial: `ZHUANG-AI 1.3.6/使用教程.html`
 
 ## 版本 / Version
+
+### 1.3.6 正式版
+
+- 修复ZHUANG-Al mini文字对话，兼容GRS/v1/chat/completions 接口。
+- mini 对话模型名不再附加grs/前缀，改为发送纯文本消息payload.
+- 优化mini 对话响应解析，兼容多种 choices/message/content返回结构。
+- 修复mini 本地设置读取异常，localStorage 解析失败时自动回退默认配置。
+- 更新 mini Service Worker 缓存到v2，减少旧缓存导致的页面不刷新问题。
+- 修复Photoshop插件内GRS对话路由与旧密钥兼容问题。
+- 恢复插件多轮文字对话、选区图文上下文和错误提示显示。
+- 同步项目目录重组:插件源文件、mini源文件、GitHub官网与发布内容分离管理。
+- 更新干净的Photoshop Plug-ins 安装ZIP，避免发布包混入开发目录或缓存文件。
+
+### 1.3.6 Stable
+
+- Fixed ZHUANG-AI mini text chat, added compatibility with the GRS/v1/chat/completions interface.
+- Removed the grs/ prefix from mini chat model names; changed to send pure text message payload.
+- Optimized mini chat response parsing to be compatible with multiple choices/message/content return structures.
+- Fixed mini local settings reading anomaly; automatically falls back to default configuration when localStorage parsing fails.
+- Updated mini Service Worker cache to v2 to reduce page refresh issues caused by old caches.
+- Fixed the compatibility issue between GRS chat routing and legacy keys within the Photoshop plugin.
+- Restored multi-turn text chat, selection image-text context, and error message display in the plugin.
+- Synchronized project directory reorganization: separated the management of plugin source files, mini source files, GitHub official website, and release content.
+- Updated a clean Photoshop Plug-ins installation ZIP to prevent development directories or cache files from mixing into the release package.
 
 ### 1.3.5 正式版
 
