@@ -361,7 +361,6 @@
     <a href="#work">项目</a>
     <a href="#features">功能</a>
     <a href="#download">下载</a>
-    <a href="mini-tutorial.html">mini教程</a>
     <a href="#history">更新</a>
     <a href="#contact">联系</a>
    </nav>
@@ -438,7 +437,7 @@
       <div class="project-icon"><div class="project-initial">M</div></div>
       <div>
        <span class="project-status">已发布 · Web / PWA</span>
-       <h3>ZHUANG-AI mini 手机端</h3>
+       <h3>ZHUANG-AI mini 1.1.1 手机端</h3>
        <p>ZHUANG-AI mini 是项目矩阵里的移动端轻量应用，已经提供可用的 Web / PWA 版本，可在手机上完成主图上传、参考图整理、提示词预设、对话分析、历史记录查看，并直接连接 GRS API 做移动端快速生成。</p>
        <div class="meta-row">
         <span class="pill">手机端</span>
@@ -453,8 +452,6 @@
        </div>
        <div class="hero-actions" style="margin-top:0">
         <a class="btn primary" href="mini/">打开 mini</a>
-        <a class="btn" href="mini-tutorial.html">使用教程</a>
-        <a class="btn" href="#contact">加入交流群</a>
        </div>
       </div>
      </div>
@@ -527,17 +524,21 @@
      </div>
      <a class="btn primary" href="downloads/ZHUANG-AI-1.3.6.zip">立即下载</a>
     </div>
-    <div class="download-box" style="margin-top:14px">
-     <div>
+     <div class="download-box" style="margin-top:14px">
+    <div>
       <div class="section-kicker">Mobile / PWA</div>
       <h2 style="margin-bottom:6px">下载 ZHUANG-AI mini</h2>
-      <p>ZHUANG-AI mini 是手机端 Web / PWA 轻量应用，可在手机浏览器中打开，也可以添加到主屏幕使用。支持主图、参考图、提示词预设、对话分析、历史记录与本地设置保存。</p>
-     </div>
-     <div class="hero-actions" style="margin-top:0">
-      <a class="btn primary" href="../dist/ZHUANG-AI-mini.zip">下载 mini</a>
-      <a class="btn" href="mini-tutorial.html">使用教程</a>
-     </div>
+      <p>ZHUANG-AI mini 是手机端 Web / PWA
+  应用，支持主图、参考图、预设、对话分析和历史记录。</p>
+      <div class="meta-row" style="margin-top:10px">
+        <span class="pill">手机端</span>
+        <span class="pill">Web / PWA</span>
+        <span class="pill">已发布</span>
+      </div>
     </div>
+    <a class="btn primary" href="https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/mini/">下载 mini</a>
+  </div>
+
    </div>
   </section>
 
@@ -549,25 +550,13 @@
     </div>
     <div class="timeline">
      <div class="timeline-item">
-      <strong>1.3.6 正式版（2026-05-14）</strong>
+      <strong>1.3.6 正式版（2026-05-12）</strong>
       <ul>
-       <li>修复 ZHUANG-AI mini 文字对话，兼容 GRS /v1/chat/completions 接口。</li>
-       <li>mini 对话模型名不再附加 grs/ 前缀，改为发送纯文本消息 payload。</li>
-       <li>优化 mini 对话响应解析，兼容多种 choices / message / content 返回结构。</li>
-       <li>修复 mini 本地设置读取异常，localStorage 解析失败时自动回退默认配置。</li>
-       <li>更新 mini Service Worker 缓存到 v2，减少旧缓存导致的页面不刷新问题。</li>
-       <li>修复 Photoshop 插件内 GRS 对话路由与旧密钥兼容问题，恢复多轮文字对话、选区图文上下文和错误提示显示。</li>
-       <li>同步项目目录重组：插件源文件、mini 源文件、GitHub 官网与发布内容分离管理。</li>
-       <li>更新干净的 Photoshop Plug-ins 安装 ZIP。</li>
-      </ul>
-     </div>
-     <div class="timeline-item">
-      <strong>ZHUANG-AI mini 手机端（2026-05-13）</strong>
-      <ul>
-       <li>已发布的手机端 Web / PWA 轻量应用，可在手机浏览器中打开并添加到主屏幕使用。</li>
-       <li>支持主图上传、选区框选、参考图整理、提示词预设、GRS API 生成和对话分析。</li>
-       <li>支持历史记录与本地设置保存在浏览器中。</li>
-       <li>内置数十个修图预设，涵盖脸部、毛发、服装、腿部等多个分类。</li>
+       <li>新增图生图多参考图功能，主图与参考图分离，最多支持 4 张参考图。</li>
+       <li>参考图支持从 Photoshop 当前选区添加、缩略图预览、删除，并随 GRS 图生图请求一起发送。</li>
+       <li>参考图可随预设保存/加载，也会随批处理任务保留。</li>
+       <li>修复智能对齐会改变当前 Photoshop 文档/画布尺寸的问题。</li>
+       <li>优化伪下拉框层级和 Photoshop UXP 面板布局。</li>
       </ul>
      </div>
      <div class="timeline-item">
@@ -578,7 +567,8 @@
        <li>支持对话读取 Photoshop 选区后进行图文问答。</li>
        <li>重构生图、设置、日志等界面结构，提升窄面板可用性。</li>
       </ul>
-     </div></div>
+     </div>
+    </div>
    </div>
   </section>
 
