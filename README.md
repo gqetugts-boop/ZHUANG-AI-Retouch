@@ -29,6 +29,7 @@ After extracting it, drag or copy the whole `ZHUANG-AI-PS-Plugins` folder into P
 ## 官网 / Website
 
 - 官网 / Website: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/
+- 个人网站：https://www.syyyy.online
 - GitHub: https://github.com/gqetugts-boop/ZHUANG-AI-Retouch
 - 插件交流群 / QQ Group: `1103212650`
 - 作者 / Author: 庄泽 / 零柒zero
