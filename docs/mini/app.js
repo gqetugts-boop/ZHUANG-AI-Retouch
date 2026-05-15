@@ -724,11 +724,19 @@ let activePromptPresetMajor = "二次元";
 let activePromptPresetCategory = "脸部";
 let activePromptPresetContent = "";
 
+function safeJsonParse(text, fallback) {
+  try {
+    return JSON.parse(text || JSON.stringify(fallback));
+  } catch (error) {
+    return fallback;
+  }
+}
+
 const state = {
   mainImage: "",
   references: Array(4).fill(null),
-  history: JSON.parse(localStorage.getItem("zhuangAiMiniHistory") || "[]"),
-  chat: JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]"),
+  history: safeJsonParse(localStorage.getItem("zhuangAiMiniHistory"), []),
+  chat: safeJsonParse(localStorage.getItem(CHAT_STORAGE_KEY), []),
   selection: null,
   selectedImage: "",
   results: [],
@@ -944,10 +952,8 @@ function joinApiUrl(baseUrl, path) {
 
 function normalizeGrsModelName(model) {
   const cleanModel = String(model || "").trim();
-  if (/^grs\//i.test(cleanModel)) return cleanModel;
   if (cleanModel === "PS_NATIVE_NANO_BANANA") return "grs/nano-banana-pro";
-  if (cleanModel === "claude") return "claude";
-  return cleanModel;
+  return cleanModel.replace(/^grs\//i, "");
 }
 
 function isGptImagineModel(model) {
@@ -1163,7 +1169,14 @@ function extractTaskId(responseData) {
 function normalizeTextContent(content) {
   if (typeof content === "string") return content;
   if (Array.isArray(content)) {
-    return content.map((item) => item?.text || item?.content || "").filter(Boolean).join("\n").trim();
+    return content.map((item) => {
+      if (!item) return "";
+      if (typeof item === "string") return item;
+      if (typeof item.text === "string") return item.text;
+      if (typeof item.content === "string") return item.content;
+      if (typeof item.content?.text === "string") return item.content.text;
+      return "";
+    }).filter(Boolean).join("\n").trim();
   }
   return "";
 }
@@ -1175,9 +1188,18 @@ function extractChatResponseText(responseData) {
   if (messageText) return messageText;
   const deltaText = normalizeTextContent(choice?.delta?.content);
   if (deltaText) return deltaText;
+  const choiceText = normalizeTextContent(choice?.text || choice?.content);
+  if (choiceText) return choiceText;
   const parts = responseData.candidates?.[0]?.content?.parts;
-  if (Array.isArray(parts)) return parts.map((part) => part.text || "").filter(Boolean).join("\n").trim();
-  return normalizeTextContent(responseData.content) || normalizeTextContent(responseData.text);
+  if (Array.isArray(parts)) {
+    const candidateText = normalizeTextContent(parts);
+    if (candidateText) return candidateText;
+  }
+  const responseMessageText = normalizeTextContent(responseData.message?.content || responseData.message?.text);
+  if (responseMessageText) return responseMessageText;
+  const dataText = normalizeTextContent(responseData.data?.text || responseData.data?.content || responseData.data?.message?.content);
+  if (dataText) return dataText;
+  return normalizeTextContent(responseData.content || responseData.text || responseData.output_text);
 }
 
 function parseResponseText(text) {
@@ -1646,8 +1668,11 @@ function renderChat() {
 
   state.chat.forEach((message) => {
     const item = document.createElement("div");
+    const label = document.createElement("strong");
+    const text = document.createTextNode(message.text || "");
     item.className = `chat-message ${message.role}`;
-    item.innerHTML = `<strong>${message.role === "user" ? "你" : "ZHUANG-AI mini"}</strong>${message.text}`;
+    label.textContent = message.role === "user" ? "你" : "ZHUANG-AI mini";
+    item.append(label, text);
     chatMessages.appendChild(item);
   });
 
@@ -1673,6 +1698,8 @@ async function sendChatMessage() {
     return;
   }
 
+  const messages = getChatContextMessages(text);
+
   state.chat.push({ role: "user", text });
   chatInput.value = "";
   state.isChatSending = true;
@@ -1682,11 +1709,10 @@ async function sendChatMessage() {
   renderChat();
 
   try {
-    const contextImage = state.selectedImage || state.mainImage;
     const data = await requestJson(joinApiUrl(apiUrl, "/v1/chat/completions"), apiKey, {
       model: normalizeGrsModelName(getPseudoSelectValue(chatModel)),
       stream: false,
-      messages: getChatContextMessages(text, contextImage),
+      messages,
     });
     state.chat.push({ role: "assistant", text: extractChatResponseText(data) || "接口已返回，但没有解析到文字内容。" });
   } catch (error) {
@@ -1884,7 +1910,7 @@ function switchTab(name) {
 }
 
 function loadSettings() {
-  const settings = JSON.parse(localStorage.getItem("zhuangAiMiniSettings") || "{}");
+  const settings = safeJsonParse(localStorage.getItem("zhuangAiMiniSettings"), {});
 
   if (settings.imageModel) {
     setPseudoSelectValue(imageModel, settings.imageModel, false);

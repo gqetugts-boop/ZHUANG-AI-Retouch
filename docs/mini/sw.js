@@ -1,4 +1,4 @@
-const CACHE_NAME = "zhuang-ai-mini-v1";
+const CACHE_NAME = "zhuang-ai-mini-v2";
 const APP_ASSETS = [
   "./",
   "index.html",

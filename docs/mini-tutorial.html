@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZHUANG-AI mini 手机端使用教程</title>
+  <style>
+    :root {
+      --bg: #080b10;
+      --card: #151b26;
+      --soft: #1a2230;
+      --text: #eef4ff;
+      --muted: rgba(238,244,255,.64);
+      --line: rgba(120,160,220,.18);
+      --accent: #4d9eff;
+      --accent-2: #8b6cff;
+      --ok: #64d98a;
+      --warn: #ffcc66;
+      --danger: #ff6b7a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(77,158,255,.16), transparent 34%),
+        radial-gradient(circle at 80% 8%, rgba(139,108,255,.14), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+
+    a { color: inherit; }
+    .wrap { max-width: 1080px; margin: 0 auto; }
+
+    .hero, .card {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(26,34,48,.96), rgba(18,24,34,.96));
+      box-shadow: 0 18px 48px rgba(0,0,0,.30);
+    }
+
+    .hero { padding: 30px; margin-bottom: 18px; }
+    .card { padding: 22px; margin: 16px 0; }
+
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.25; }
+    h1 { font-size: clamp(30px, 6vw, 48px); letter-spacing: -0.04em; }
+    h2 { font-size: 24px; border-left: 4px solid var(--accent); padding-left: 10px; }
+    h3 { font-size: 18px; color: #cfe5ff; }
+
+    p { margin: 8px 0; color: var(--muted); }
+    ol, ul { margin: 8px 0 0; padding-left: 24px; }
+    li { margin: 8px 0; }
+
+    code {
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #090d13;
+      color: #cfe5ff;
+    }
+
+    .badge, .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      font-weight: 800;
+    }
+
+    .badge {
+      margin-top: 12px;
+      padding: 6px 11px;
+      border: 1px solid rgba(77,158,255,.32);
+      color: #cfe5ff;
+      background: rgba(77,158,255,.10);
+    }
+
+    .pill {
+      padding: 5px 10px;
+      border: 1px solid rgba(120,160,220,.16);
+      color: var(--muted);
+      background: rgba(238,244,255,.06);
+      font-size: 13px;
+    }
+
+    .quick-links, .browser-grid, .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+    }
+
+    .quick-links a, .step, .browser-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(9,13,19,.55);
+      text-decoration: none;
+    }
+
+    .quick-links a:hover { border-color: rgba(77,158,255,.48); }
+    .browser-card h3, .step h3 { margin-bottom: 8px; }
+    .ok { color: var(--ok); font-weight: 800; }
+    .warn { color: var(--warn); font-weight: 800; }
+    .danger { color: var(--danger); font-weight: 800; }
+    .muted { color: var(--muted); }
+    .small { font-size: 14px; }
+
+    .toc-note {
+      margin-top: 14px;
+      padding: 14px;
+      border: 1px solid rgba(255,204,102,.25);
+      border-radius: 16px;
+      background: rgba(255,204,102,.08);
+      color: rgba(255,245,215,.86);
+    }
+
+    @media (max-width: 720px) {
+      body { padding: 14px; }
+      .hero, .card { padding: 18px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>ZHUANG-AI mini 手机端使用教程</h1>
+      <p>ZHUANG-AI mini 是手机端 Web / PWA 轻量应用，可在手机浏览器中打开，也可以添加到主屏幕使用。它支持主图上传、选区框选、参考图整理、提示词预设、GRS API 生成、对话分析、历史记录和本地设置保存。</p>
+      <div class="badge">适用：中国常见手机浏览器 · Web / PWA</div>
+      <p class="toc-note">建议优先使用手机系统自带浏览器、Chrome、Edge、QQ 浏览器、夸克浏览器或 UC 浏览器。不同浏览器菜单名称会略有差异，但核心步骤都是：打开 <code>mini/</code> 页面 → 允许相册权限 → 添加到桌面或主屏幕。</p>
+    </div>
+
+    <div class="card">
+      <h2>一、快速开始</h2>
+      <ol>
+        <li>在手机浏览器里打开官网里的 <code>ZHUANG-AI mini</code> 入口，或打开本教程同级目录下的 <code>mini/</code>。</li>
+        <li>第一次使用先进入底部 <code>设置</code>，填写 <code>GRS API Key</code> 和 <code>GRS API 地址</code>。</li>
+        <li>回到 <code>创作</code> 页面，点击 <code>选择图片</code> 添加主图。</li>
+        <li>在主图上拖拽框选要处理的区域，点击 <code>读取选区</code>。</li>
+        <li>按需要添加最多 4 张参考图，选择生图模型、图片大小和生成数量。</li>
+        <li>选择提示词预设或自己输入提示词，点击 <code>开始生成</code>。</li>
+        <li>生成结果会显示在页面下方，同时保存到本机浏览器的 <code>历史</code> 里。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>二、核心功能怎么用</h2>
+      <div class="feature-grid">
+        <div class="step">
+          <h3>主图与选区</h3>
+          <p>点击 <code>选择图片</code> 从相册选择主图。图片出现后，直接在图片上按住拖拽框选区域；需要精确比例时，可以开启 <code>锁定比例</code> 并选择比例。</p>
+        </div>
+        <div class="step">
+          <h3>参考图</h3>
+          <p>参考图最多 4 张，适合作为脸部、服装、发型、材质、构图或风格参考。添加后可预览，也可以删除后重新选择。</p>
+        </div>
+        <div class="step">
+          <h3>模型与输出</h3>
+          <p>生图模型包含 Nano Banana 系列和 gpt-image-2 / claude-imagine-2。图片大小可选自适应、1K、2K、4K，生成数量可选 1 到 4 张。</p>
+        </div>
+        <div class="step">
+          <h3>提示词预设</h3>
+          <p>在提示词区域可以搜索预设、按分类筛选，也可以手动输入自己的修图目标。常用提示词可保存为自己的预设。</p>
+        </div>
+        <div class="step">
+          <h3>对话分析</h3>
+          <p>进入底部 <code>对话</code>，选择 GRS 对话模型后输入问题。它可以用来分析修图方向、优化提示词、整理后期步骤。</p>
+        </div>
+        <div class="step">
+          <h3>历史与设置</h3>
+          <p><code>历史</code> 和 <code>设置</code> 都保存在当前浏览器本机数据里。换浏览器、清理缓存或使用无痕模式，可能会导致记录和 API Key 消失。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>三、添加到桌面 / 主屏幕通用说明</h2>
+      <ol>
+        <li>先用手机浏览器打开 <code>ZHUANG-AI mini</code> 页面。</li>
+        <li>点击浏览器底部或右上角的 <code>菜单</code>、<code>更多</code>、<code>分享</code> 或 <code>三点</code> 按钮。</li>
+        <li>找到 <code>添加到桌面</code>、<code>添加到主屏幕</code>、<code>安装应用</code>、<code>创建快捷方式</code> 或类似选项。</li>
+        <li>确认名称为 <code>ZHUANG-AI mini</code>，点击添加。</li>
+        <li>回到手机桌面，点击图标即可像 App 一样打开。</li>
+      </ol>
+      <p class="warn">如果看不到添加入口，先确认当前不是无痕模式，并尝试刷新页面或换用系统浏览器、Chrome、Edge、QQ 浏览器、夸克浏览器。</p>
+    </div>
+
+    <div class="card" id="browsers">
+      <h2>四、中国常见浏览器教程</h2>
+      <p>下面覆盖国内用户常见的手机浏览器。不同版本界面可能会变化，如果菜单名称不同，优先寻找含有“桌面、主屏幕、安装、快捷方式、收藏”的入口。</p>
+      <div class="browser-grid">
+        <div class="browser-card">
+          <h3>1. 微信内置浏览器</h3>
+          <ol>
+            <li>在微信里打开 mini 页面。</li>
+            <li>点击右上角 <code>···</code>。</li>
+            <li>如需稳定使用，选择 <code>在浏览器打开</code>，再用系统浏览器或 QQ 浏览器继续。</li>
+            <li>微信内置浏览器通常不适合作为 PWA 安装入口，建议只用于临时访问。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>2. QQ 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部或右上角 <code>菜单</code>。</li>
+            <li>选择 <code>工具箱</code> 或 <code>添加到</code>。</li>
+            <li>点击 <code>添加到桌面</code>，确认添加。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>3. 夸克浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部 <code>菜单</code>。</li>
+            <li>找到 <code>添加到桌面</code> 或 <code>工具箱</code> 里的桌面快捷方式。</li>
+            <li>确认后从手机桌面打开。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>4. UC 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部 <code>菜单</code>。</li>
+            <li>进入 <code>收藏/历史</code>、<code>工具箱</code> 或 <code>添加</code> 相关入口。</li>
+            <li>选择 <code>添加到桌面</code> 或 <code>创建快捷方式</code>。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>5. 百度浏览器 / 百度 App</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部或右上角的 <code>菜单</code>。</li>
+            <li>如果有 <code>添加到桌面</code>，直接添加。</li>
+            <li>如果只有收藏入口，可先收藏；需要 PWA 桌面图标时建议换系统浏览器或 Chrome。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>6. 360 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击 <code>菜单</code> 或 <code>三横线</code>。</li>
+            <li>找到 <code>添加到桌面</code>、<code>保存到桌面</code> 或 <code>网页快捷方式</code>。</li>
+            <li>确认添加后，从桌面图标进入。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>7. 搜狗浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击浏览器 <code>菜单</code>。</li>
+            <li>选择 <code>收藏</code> 或 <code>添加到桌面</code>。</li>
+            <li>如果没有桌面入口，可使用收藏访问，或换支持 PWA 更完整的浏览器。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>8. 小米浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部 <code>菜单</code>。</li>
+            <li>选择 <code>添加到桌面</code> 或 <code>桌面快捷方式</code>。</li>
+            <li>如系统提示权限，允许浏览器创建桌面快捷方式。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>9. 华为浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部或右上角 <code>菜单</code>。</li>
+            <li>选择 <code>添加至桌面</code>、<code>添加到主屏幕</code> 或 <code>收藏</code>。</li>
+            <li>如果系统拦截，进入手机设置允许浏览器创建桌面快捷方式。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>10. OPPO 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击 <code>菜单</code>。</li>
+            <li>选择 <code>添加到桌面</code> 或 <code>桌面快捷方式</code>。</li>
+            <li>按系统提示开启快捷方式权限。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>11. vivo 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击 <code>菜单</code>。</li>
+            <li>选择 <code>添加书签</code>、<code>添加到桌面</code> 或类似选项。</li>
+            <li>添加后回到桌面检查图标。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>12. 荣耀浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击 <code>菜单</code> 或 <code>更多</code>。</li>
+            <li>选择 <code>添加到桌面</code> 或 <code>添加到主屏幕</code>。</li>
+            <li>如果失败，检查浏览器桌面快捷方式权限。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>13. 三星浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击右下角 <code>菜单</code>。</li>
+            <li>选择 <code>添加页面到</code>。</li>
+            <li>选择 <code>主屏幕</code>，确认添加。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>14. Safari（iPhone）</h3>
+          <ol>
+            <li>用 Safari 打开 mini 页面。</li>
+            <li>点击底部 <code>分享</code> 按钮。</li>
+            <li>向下滑动，选择 <code>添加到主屏幕</code>。</li>
+            <li>点击右上角 <code>添加</code>。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>15. Chrome</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击右上角 <code>三点</code>。</li>
+            <li>选择 <code>安装应用</code>、<code>添加到主屏幕</code> 或 <code>添加到桌面</code>。</li>
+            <li>确认后从桌面图标启动。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>16. Edge</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击底部或右上角 <code>菜单</code>。</li>
+            <li>选择 <code>添加到手机</code>、<code>添加到屏幕</code> 或 <code>安装此站点为应用</code>。</li>
+            <li>确认安装或添加快捷方式。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>17. Firefox</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击右上角 <code>菜单</code>。</li>
+            <li>如果出现 <code>安装</code>、<code>添加到主屏幕</code> 或 <code>添加页面快捷方式</code>，按提示添加。</li>
+            <li>若当前版本不支持安装，可收藏页面或换 Chrome / Edge / 系统浏览器。</li>
+          </ol>
+        </div>
+        <div class="browser-card">
+          <h3>18. 2345 浏览器</h3>
+          <ol>
+            <li>打开 mini 页面。</li>
+            <li>点击 <code>菜单</code>。</li>
+            <li>查找 <code>添加到桌面</code>、<code>保存网页</code> 或 <code>快捷方式</code>。</li>
+            <li>如果只支持收藏，可先收藏使用。</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>五、权限说明</h2>
+      <div class="feature-grid">
+        <div class="step">
+          <h3>相册 / 文件权限</h3>
+          <p>选择主图和参考图时，浏览器会请求访问相册或文件。请选择允许，否则无法上传图片。</p>
+        </div>
+        <div class="step">
+          <h3>桌面快捷方式权限</h3>
+          <p>部分安卓系统会禁止浏览器创建桌面图标。进入系统设置，找到对应浏览器，允许 <code>创建桌面快捷方式</code> 或 <code>桌面权限</code>。</p>
+        </div>
+        <div class="step">
+          <h3>本地存储</h3>
+          <p>API Key、历史记录、预设和设置保存在当前浏览器本地。不要在别人的手机上保存自己的 API Key。</p>
+        </div>
+        <div class="step">
+          <h3>网络权限</h3>
+          <p>生图和对话需要访问你填写的 GRS API 地址。网络不稳定、地址错误或 Key 错误都会导致请求失败。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>六、更新与缓存</h2>
+      <ol>
+        <li>如果官网更新了 mini，但你看到的还是旧页面，先下拉刷新或点击浏览器刷新。</li>
+        <li>如果仍然没更新，进入浏览器设置，清理当前站点缓存后重新打开。</li>
+        <li>已经添加到桌面的 PWA 图标也可能缓存旧版本，可以删除桌面图标后重新添加。</li>
+        <li>清理缓存前请确认自己还记得 GRS API Key，因为清理后本地设置可能会丢失。</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>七、常见问题</h2>
+      <div class="step">
+        <h3>1. 点“选择图片”没有反应</h3>
+        <p>检查浏览器是否有相册或文件权限；如果在微信内置浏览器里失败，选择“在浏览器打开”后再试。</p>
+      </div>
+      <div class="step">
+        <h3>2. 无法添加到桌面</h3>
+        <p>先检查浏览器是否支持桌面快捷方式，再检查手机系统是否禁止该浏览器创建桌面图标。部分浏览器只能收藏，不能完整安装 PWA。</p>
+      </div>
+      <div class="step">
+        <h3>3. 生图失败</h3>
+        <p>进入 <code>设置</code> 检查 GRS API Key、GRS API 地址和网络连接。API Key 错误、余额不足、接口地址填错都会失败。</p>
+      </div>
+      <div class="step">
+        <h3>4. 历史记录不见了</h3>
+        <p>历史记录保存在本机浏览器。换浏览器、无痕模式、清理缓存、卸载浏览器或删除站点数据都会让历史记录消失。</p>
+      </div>
+      <div class="step">
+        <h3>5. 页面显示错乱</h3>
+        <p>刷新页面，或清理当前站点缓存后重开。如果手机系统浏览器版本太旧，建议换 Chrome、Edge、QQ 浏览器或夸克浏览器。</p>
+      </div>
+    </div>
+
+    <div class="card small">
+      <h2>八、联系与声明</h2>
+      <p>ZHUANG-AI mini 属于 ZHUANG-AI 项目矩阵。插件作者：庄泽 / 零柒zero。插件交流群：<strong>1103212650</strong>。</p>
+      <p class="danger">ZHUANG-AI 插件完全免费，如果你从任何渠道付费获取，请立即举报商家。</p>
+    </div>
+  </div>
+</body>
+</html>
