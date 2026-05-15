@@ -1,0 +1,1551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZHUANG-AI 修图插件</title>
+    <style>
+:root {
+    --ui-scale: 1;
+    --bg-main: #080b10;
+    --bg-shell: #0d1118;
+    --bg-panel: #111720;
+    --bg-card: #151b26;
+    --bg-card-soft: #1a2230;
+    --bg-input: #090d13;
+    --bg-hover: #20293a;
+    --text-main: #eef4ff;
+    --text-secondary: rgba(238, 244, 255, 0.72);
+    --text-muted: rgba(238, 244, 255, 0.46);
+    --border-soft: rgba(120, 160, 220, 0.16);
+    --border-strong: rgba(77, 158, 255, 0.42);
+    --accent: #4d9eff;
+    --accent-2: #7c5cff;
+    --danger: #ff6b7a;
+    --radius-xl: 18px;
+    --radius-lg: 14px;
+    --radius-md: 10px;
+    --control-h: 40px;
+    --gap: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: Arial, Helvetica, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-size: calc(12px * var(--ui-scale));
+}
+
+body { display: flex; flex-direction: column; }
+button, input, select, textarea { font-family: inherit; }
+button, select, .tab, .custom-select-trigger, .custom-select-option { cursor: pointer; }
+
+.container {
+    width: 100%;
+    height: 100%;
+    padding: 12px;
+    overflow: auto;
+    background: radial-gradient(circle at 20% 0%, rgba(77, 158, 255, 0.10), transparent 34%), var(--bg-main);
+}
+
+.app-shell,
+.section {
+    min-height: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-xl);
+    background: linear-gradient(180deg, rgba(17, 23, 32, 0.98), rgba(13, 17, 24, 0.98));
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.38);
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(120, 160, 220, 0.12);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 10px;
+}
+
+.brand-mark {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(77, 158, 255, 0.35);
+    border-radius: 12px;
+    background: #10141d;
+    color: var(--accent);
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.brand-copy { min-width: 0; }
+
+.brand-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.version-badge {
+    flex: 0 0 auto;
+    padding: 3px 8px;
+    border: 1px solid rgba(77, 158, 255, 0.28);
+    border-radius: 999px;
+    background: rgba(77, 158, 255, 0.10);
+    color: var(--accent);
+    font-size: calc(9px * var(--ui-scale));
+    font-weight: 900;
+    letter-spacing: 0.04em;
+}
+
+.section-title {
+    margin: 0;
+    color: var(--text-main);
+    font-size: calc(18px * var(--ui-scale));
+    font-weight: 900;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: calc(8px * var(--ui-scale));
+    font-weight: 700;
+    letter-spacing: 0.16em;
+}
+
+.app-header-actions { flex: 0 0 auto; }
+
+.icon-action-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    padding: 0;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    background: var(--bg-card-soft);
+    color: var(--text-secondary);
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1;
+}
+
+#status.status {
+    margin: 10px 0;
+    padding: 9px 10px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: 12px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 0 10px;
+    padding: 4px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: 14px;
+    background: var(--bg-input);
+    overflow: hidden;
+}
+
+.tab {
+    flex: 1 1 0;
+    min-width: 0;
+    height: 32px;
+    padding: 0 4px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: rgba(238, 244, 255, 0.54);
+    font-size: calc(11px * var(--ui-scale));
+    font-weight: 800;
+    line-height: 32px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.tab.active {
+    border-color: rgba(77, 158, 255, 0.34);
+    background: var(--bg-card-soft);
+    color: var(--text-main);
+}
+
+.workspace { display: block; }
+.tab-content { display: none; }
+.tab-content.active { display: flex; flex-direction: column; gap: var(--gap); }
+
+.module-hero,
+.module-card,
+.form-group,
+.settings-card,
+.parameter-card,
+.notice-block,
+.preview-container,
+#chatHistory,
+#batchTaskList,
+.log-container,
+#chatSelectionPreview {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.module-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(26, 34, 48, 0.95), rgba(21, 27, 38, 0.95));
+}
+
+.module-title {
+    margin: 0;
+    color: var(--text-main);
+    font-size: calc(14px * var(--ui-scale));
+    font-weight: 900;
+    line-height: 1.25;
+}
+
+.module-desc {
+    margin-top: 5px;
+    color: var(--text-muted);
+    font-size: calc(10px * var(--ui-scale));
+    line-height: 1.45;
+}
+
+.module-badge {
+    flex: 0 0 auto;
+    padding: 5px 8px;
+    border: 1px solid rgba(77, 158, 255, 0.25);
+    border-radius: 999px;
+    color: var(--accent);
+    background: rgba(77, 158, 255, 0.08);
+    font-size: calc(9px * var(--ui-scale));
+    font-weight: 800;
+}
+
+.card-title {
+    margin: 0 0 9px;
+    color: rgba(238, 244, 255, 0.88);
+    font-size: calc(12px * var(--ui-scale));
+    font-weight: 850;
+    line-height: 1.35;
+}
+
+#chat .form-group,
+#settings .form-group,
+#webui .form-group,
+#logs .form-group,
+#batch .form-group {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+#chat #chatHistory,
+#chat #chatSelectionPreview,
+#settings .settings-card,
+#webui .settings-card,
+#webui .parameter-card,
+#logs .log-container,
+#batch #batchTaskList {
+    padding: 12px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: var(--radius-lg);
+    background: var(--bg-card);
+}
+
+.form-group > label,
+.parameter-item > label,
+.img2img-inline-cell > label,
+label,
+.parameter-label {
+    display: block;
+    margin: 0 0 7px;
+    color: rgba(238, 244, 255, 0.80);
+    font-size: calc(11px * var(--ui-scale));
+    font-weight: 760;
+    line-height: 1.35;
+}
+
+.info-text,
+.placeholder-text,
+.chat-input-hint,
+.settings-actions-tip,
+.progress-text,
+.log-time,
+.muted {
+    color: var(--text-muted);
+    font-size: calc(10px * var(--ui-scale));
+    line-height: 1.5;
+}
+
+.field-grid,
+.img2img-inline-row,
+.parameter-row-1,
+.custom-resolution-row,
+.btn-row,
+.preset-actions,
+.action-row,
+#chat .chat-action-row,
+#webui .settings-save-wrap {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+
+.field-grid > *,
+.img2img-inline-row > *,
+.parameter-row-1 > *,
+.custom-resolution-row > *,
+.btn-row > *,
+.preset-actions > *,
+.action-row > *,
+#chat .chat-action-row > *,
+#webui .settings-save-wrap > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.field-stack,
+.parameter-group,
+.settings-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.parameter-item { min-width: 0; }
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select,
+textarea,
+#logSearch,
+.webui-param-input,
+.custom-select-trigger {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    background: var(--bg-input);
+    color: var(--text-main);
+    font-size: calc(12px * var(--ui-scale));
+    outline: none;
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select,
+#logSearch,
+.webui-param-input,
+.custom-select-trigger {
+    height: var(--control-h);
+    min-height: var(--control-h);
+    padding: 0 12px;
+    line-height: normal;
+    text-align: left;
+}
+
+textarea,
+.prompt-textarea {
+    display: block;
+    min-height: 112px;
+    padding: 10px 12px;
+    line-height: 1.45;
+    resize: vertical;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+.custom-select.open .custom-select-trigger,
+.custom-select-trigger:focus {
+    border-color: var(--border-strong);
+    background: #0b1017;
+    box-shadow: 0 0 0 1px rgba(77, 158, 255, 0.12);
+}
+
+.btn,
+button {
+    min-width: 0;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    background: var(--bg-button);
+    color: rgba(238, 244, 255, 0.86);
+    font-size: calc(12px * var(--ui-scale));
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.25;
+    box-shadow: none;
+}
+
+.btn-primary,
+.btn-success,
+#btnImg2Img,
+#btnChat,
+#btnWebUIGenerate,
+#btnSaveSettings {
+    border-color: rgba(77, 158, 255, 0.42);
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #fff;
+    box-shadow: 0 0 18px rgba(77, 158, 255, 0.14);
+}
+
+.btn-secondary,
+#btnSavePreset,
+#btnDeletePreset,
+#btnChatReadSelection,
+#btnChatSendToImg2Img,
+#btnWebUIImg2Img,
+#btnWebUIRefresh {
+    background: var(--bg-card-soft);
+    color: rgba(238, 244, 255, 0.78);
+}
+
+#btnDeletePreset { color: rgba(255, 150, 160, 0.9); }
+button:hover:not(:disabled), .btn:hover:not(:disabled) { border-color: rgba(77, 158, 255, 0.36); background: var(--bg-hover); color: var(--text-main); }
+button:disabled, .btn:disabled { opacity: 0.46; }
+
+#btnImg2Img { width: 100%; height: 44px; min-height: 44px; }
+#chatHistory { height: 170px; min-height: 170px; max-height: 170px; overflow-y: auto; }
+.text-input-shell,
+.form-control-shell {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea,
+.prompt-textarea,
+#chatPrompt,
+#imgPrompt,
+#positivePrompt,
+#negativePrompt,
+#logSearch,
+.webui-param-input {
+    margin: 0 !important;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-color: rgba(120, 160, 220, 0.22) !important;
+    border-radius: 10px !important;
+    background-color: #090d13 !important;
+    background-image: none !important;
+    color: #eef4ff !important;
+    box-shadow: none !important;
+    outline: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+textarea,
+.prompt-textarea,
+#chatPrompt,
+#imgPrompt,
+#positivePrompt,
+#negativePrompt {
+    padding: 11px 12px !important;
+    background-clip: padding-box !important;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder,
+input[type="number"]::placeholder,
+textarea::placeholder {
+    color: rgba(238, 244, 255, 0.42) !important;
+    opacity: 1 !important;
+}
+
+#chatPrompt { height: 112px; min-height: 112px; max-height: 150px; }
+#chatSelectionPreview, .preview-container { min-height: 92px; border-style: dashed; background: var(--bg-input); }
+#imgPrompt, #positivePrompt, #negativePrompt { min-height: 118px; }
+#batchTaskList, .log-container { max-height: 320px; overflow-y: auto; }
+.selection-preview-img { max-width: 100%; max-height: 100%; border-radius: var(--radius-md); }
+.empty-state { display: flex; align-items: center; justify-content: center; min-height: 72px; padding: 20px; text-align: center; }
+
+.reference-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid rgba(120, 160, 220, 0.12);
+    border-radius: var(--radius-lg);
+    background: rgba(9, 13, 19, 0.72);
+}
+
+.reference-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.reference-count {
+    color: var(--text-muted);
+    font-size: calc(10px * var(--ui-scale));
+    font-weight: 800;
+}
+
+.reference-image-slots {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-height: 82px;
+}
+
+.reference-slot {
+    position: relative;
+    display: block;
+    width: 72px;
+    min-width: 72px;
+    height: 82px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: 12px;
+    background: #090d13;
+    overflow: hidden;
+    flex: 0 0 72px;
+}
+
+.reference-slot.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    min-width: 72px;
+    height: 82px;
+    color: rgba(238, 244, 255, 0.28);
+    font-size: calc(10px * var(--ui-scale));
+    border-style: dashed;
+    flex: 0 0 72px;
+}
+
+.reference-slot img {
+    display: block;
+    width: 72px;
+    height: 82px;
+    object-fit: cover;
+}
+
+.reference-slot-label {
+    display: none;
+}
+
+.reference-slot-delete {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+    padding: 0;
+    border-radius: 999px;
+    background: rgba(9, 13, 19, 0.82);
+    color: rgba(238, 244, 255, 0.84);
+    font-size: calc(11px * var(--ui-scale));
+    line-height: 18px;
+}
+
+.reference-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.reference-actions > * {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.notice-block,
+.notice-block * {
+    max-width: 100%;
+    min-width: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    overflow-x: hidden;
+}
+
+.log-container,
+.log-entry,
+.log-entry * {
+    max-width: 100%;
+    min-width: 0;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.notice-divider { display: block; width: 100%; height: 1px; margin: 12px 0; padding: 0; border: none; background: rgba(238, 244, 255, 0.38); overflow: hidden; white-space: nowrap; line-height: 1px; }
+.divider { height: 1px; margin: 0; border: none; background: rgba(120, 160, 220, 0.10); }
+
+#settings input[type="text"],
+#settings input[type="password"],
+#settings input[type="number"],
+#settings select,
+#settings .custom-select-trigger {
+    display: block !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    border: 1px solid rgba(120, 160, 220, 0.22) !important;
+    border-radius: 10px !important;
+    background-color: #090d13 !important;
+    background-image: none !important;
+    color: #eef4ff !important;
+    font-size: calc(12px * var(--ui-scale)) !important;
+    font-weight: 700 !important;
+    line-height: normal !important;
+    box-shadow: none !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+}
+
+#settings input[type="text"]::-webkit-textfield-decoration-container,
+#settings input[type="password"]::-webkit-textfield-decoration-container {
+    display: none !important;
+}
+
+#settings input[type="text"]::-webkit-credentials-auto-fill-button,
+#settings input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+#settings .settings-card {
+    padding: 12px !important;
+}
+
+#settings .settings-card label {
+    margin-bottom: 9px;
+}
+
+#settings .settings-card .info-text {
+    margin-top: 8px;
+}
+
+#settings .settings-priority-card,
+#settings .settings-help-card {
+    padding: 12px;
+    background: linear-gradient(180deg, rgba(21, 27, 38, 0.98), rgba(17, 23, 32, 0.98));
+}
+
+#settings .settings-group {
+    margin: 10px 0 0;
+}
+
+#settings .settings-group-body {
+    gap: 12px;
+}
+
+#settings .settings-save-standalone {
+    padding: 10px;
+    border: 1px solid rgba(77, 158, 255, 0.18);
+    border-radius: var(--radius-lg);
+    background: rgba(13, 17, 24, 0.78);
+}
+
+#settings #btnSaveSettings {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+}
+
+#settings .notice-block {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+#settings .notice-section {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+#settings .notice-section strong {
+    display: block;
+    margin-bottom: 6px;
+    color: rgba(238, 244, 255, 0.88);
+    font-size: calc(11px * var(--ui-scale));
+}
+
+#settings .settings-group[data-group="grs"] { display: block; }
+#settings .settings-group[data-group="grs"] .settings-group-toggle,
+#settings .settings-group[data-group="openai"],
+#settings .settings-group[data-group="newapi"] { display: none !important; }
+#settings .settings-group[data-group="grs"] .settings-group-body,
+#settings .settings-group[data-group="other"] .settings-group-body { height: auto !important; max-height: none !important; padding: 0 !important; border: none !important; overflow: visible !important; }
+
+.custom-select {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.native-select-hidden {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 1px !important;
+    height: 1px !important;
+    min-width: 1px !important;
+    min-height: 1px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    appearance: none !important;
+}
+
+.custom-select-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    cursor: pointer;
+    text-align: left;
+    user-select: none;
+}
+
+.custom-select-trigger::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    border-right: 1.5px solid rgba(238, 244, 255, 0.62);
+    border-bottom: 1.5px solid rgba(238, 244, 255, 0.62);
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.16s ease, border-color 0.16s ease;
+}
+
+.custom-select.open .custom-select-trigger::after {
+    transform: translateY(2px) rotate(225deg);
+    border-color: var(--accent);
+}
+
+.custom-select-panel {
+    display: none;
+    position: fixed !important;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px;
+    border: 1px solid rgba(120, 160, 220, 0.24);
+    border-radius: var(--radius-lg);
+    background: #10141d;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.54), 0 0 0 1px rgba(77, 158, 255, 0.06) inset;
+    z-index: 2147483647 !important;
+    transform: translateZ(0);
+    isolation: isolate;
+}
+
+.custom-select-panel.open {
+    display: block !important;
+    pointer-events: auto !important;
+}
+
+.custom-select-option {
+    min-height: 34px;
+    padding: 9px 10px;
+    border-radius: 9px;
+    color: var(--text-secondary);
+    font-size: calc(12px * var(--ui-scale));
+    line-height: 1.35;
+    cursor: pointer;
+    user-select: none;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.custom-select-option:hover,
+.custom-select-option.active,
+.custom-select-option.selected {
+    background: linear-gradient(135deg, rgba(77, 158, 255, 0.20), rgba(124, 92, 255, 0.16));
+    color: var(--text-main);
+}
+
+.custom-select-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2147483646 !important;
+    background: transparent;
+}
+
+.custom-select-backdrop.open {
+    display: block !important;
+}
+
+.control-mirror-layer,
+.control-mirror {
+    display: none !important;
+}
+
+.native-control-overlay-hidden {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+html.global-dropdown-open input[type="text"],
+html.global-dropdown-open input[type="password"],
+html.global-dropdown-open input[type="number"],
+html.global-dropdown-open input[type="search"],
+html.global-dropdown-open input[type="url"],
+html.global-dropdown-open textarea,
+html.global-dropdown-open sp-textarea {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+#webui .parameter-card {
+    padding: 12px;
+}
+
+#webui .parameter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#webui .parameter-row-1 {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
+#webui .parameter-row-1 > .parameter-item {
+    display: block !important;
+    flex: 1 1 calc(50% - 4px) !important;
+    width: calc(50% - 4px) !important;
+    min-width: 120px !important;
+    max-width: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#webui .parameter-row-1 > *,
+#webui .custom-resolution-row > * {
+    min-width: 0 !important;
+}
+
+#webui .parameter-item {
+    min-width: 0;
+}
+
+#webui .parameter-item label {
+    min-height: 16px;
+    margin-bottom: 7px;
+}
+
+#webui .webui-param-input {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 10px !important;
+    border: 1px solid rgba(120, 160, 220, 0.22) !important;
+    border-radius: 10px !important;
+    background: #090d13 !important;
+    color: #eef4ff !important;
+    text-align: left !important;
+}
+
+#webui .parameter-card .custom-select-trigger {
+    height: 42px;
+    min-height: 42px;
+    justify-content: center;
+    border-radius: 12px;
+    background: #090d13;
+    font-weight: 850;
+    text-align: center;
+}
+
+#webui .custom-resolution-row {
+    display: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+#webui .custom-resolution-row.active {
+    display: grid !important;
+}
+
+@media (max-width: 420px) {
+    #webui .parameter-row-1 > .parameter-item {
+        flex-basis: calc(50% - 4px) !important;
+        width: calc(50% - 4px) !important;
+        min-width: 0 !important;
+    }
+}
+
+#logs .logs-toolbar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#logs .logs-search-group {
+    padding: 0;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+#logs #logSearch {
+    height: 40px !important;
+    min-height: 40px !important;
+    background: #090d13 !important;
+}
+
+#logs .logs-action-row .btn {
+    height: 38px;
+    min-height: 38px;
+}
+
+#logs .danger-action {
+    color: rgba(255, 150, 160, 0.92);
+}
+
+#logs .logs-list-card {
+    padding: 12px;
+}
+
+#logs .log-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: none;
+    padding: 0;
+    border: none;
+    background: transparent;
+    overflow: visible;
+}
+
+#logs .log-entry {
+    position: relative;
+    display: block;
+    min-height: 92px;
+    padding: 12px 76px 12px 12px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: 14px;
+    background: #101722;
+    color: var(--text-secondary);
+    overflow: hidden;
+    cursor: pointer;
+    transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+#logs .log-entry.success {
+    border-color: rgba(87, 210, 132, 0.22);
+}
+
+#logs .log-entry.error {
+    border-color: rgba(255, 107, 122, 0.28);
+}
+
+#logs .log-head {
+    display: block;
+    min-width: 0;
+    margin-bottom: 5px;
+}
+
+#logs .log-title {
+    display: block;
+    min-width: 0;
+    color: var(--text-main);
+    font-size: calc(12px * var(--ui-scale));
+    font-weight: 850;
+    line-height: 1.35;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#logs .log-badge {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(120, 160, 220, 0.10);
+    color: var(--text-muted);
+    font-size: calc(10px * var(--ui-scale));
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+#logs .log-entry.success .log-badge {
+    background: rgba(87, 210, 132, 0.12);
+    color: rgba(120, 235, 160, 0.9);
+}
+
+#logs .log-entry.error .log-badge {
+    background: rgba(255, 107, 122, 0.12);
+    color: rgba(255, 150, 160, 0.92);
+}
+
+#logs .log-meta {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 7px;
+    color: var(--text-muted);
+    font-size: calc(9px * var(--ui-scale));
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#logs .log-time,
+#logs .log-model,
+#logs .log-size,
+#logs .log-doc {
+    display: inline;
+    white-space: nowrap;
+}
+
+#logs .log-time + .log-model::before,
+#logs .log-model + .log-size::before,
+#logs .log-size + .log-doc::before,
+#logs .log-time + .log-size::before,
+#logs .log-time + .log-doc::before,
+#logs .log-model + .log-doc::before {
+    content: " · ";
+    color: rgba(238, 244, 255, 0.28);
+}
+
+#logs .log-body {
+    display: block;
+    min-width: 0;
+}
+
+#logs .log-text,
+#logs .log-error {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-top: 5px;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 20px;
+    height: 34px;
+}
+
+#logs .log-text {
+    padding: 7px 8px;
+    border-radius: 10px;
+    background: rgba(9, 13, 19, 0.72);
+    color: rgba(238, 244, 255, 0.82);
+    font-size: calc(10px * var(--ui-scale));
+    box-sizing: border-box;
+}
+
+#logs .log-error {
+    color: rgba(255, 150, 160, 0.94);
+    font-size: calc(10px * var(--ui-scale));
+}
+
+#logs .log-entry.expanded {
+    min-height: 0;
+    padding-right: 12px;
+    background: #121b27;
+    overflow: visible;
+}
+
+#logs .log-entry.expanded .log-badge {
+    position: static;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+#logs .log-entry.expanded .log-title,
+#logs .log-entry.expanded .log-meta,
+#logs .log-entry.expanded .log-text,
+#logs .log-entry.expanded .log-error {
+    height: auto;
+    max-height: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+#logs .log-entry.expanded .log-text,
+#logs .log-entry.expanded .log-error {
+    line-height: 1.55;
+}
+
+.progress-bar-container { width: 100%; border: 1px solid rgba(120, 160, 220, 0.14); border-radius: 999px; background: var(--bg-input); overflow: hidden; }
+.progress-bar { height: 24px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 0.3s ease; }
+.toast {
+    display: none !important;
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    z-index: 10000;
+    transform: translateX(-50%);
+    max-width: calc(100% - 24px);
+    padding: 9px 12px;
+    border: 1px solid rgba(120, 160, 220, 0.18);
+    border-radius: 999px;
+    background: #10141d;
+    color: var(--text-main);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.35);
+}
+.toast.show:not(:empty) {
+    display: block !important;
+}
+
+@media (max-width: 420px) {
+    .container { padding: 8px; }
+    .app-shell, .section { padding: 10px; }
+    .section-title { font-size: calc(16px * var(--ui-scale)); }
+    .tabs { gap: 3px; padding: 3px; }
+    .tab { height: 30px; padding: 0 2px; font-size: calc(10px * var(--ui-scale)); line-height: 30px; }
+    .module-hero, .module-card, .form-group, .settings-card, .parameter-card, .notice-block, .preview-container, #chatHistory, #batchTaskList, .log-container, #chatSelectionPreview { padding: 10px; }
+    .field-grid, .img2img-inline-row, .parameter-row-1, .custom-resolution-row, .btn-row, .preset-actions, .action-row, #chat .chat-action-row, #webui .settings-save-wrap { gap: 6px; }
+    .parameter-row-1, .custom-resolution-row { flex-wrap: wrap; }
+    .parameter-row-1 > *, .custom-resolution-row > * { flex-basis: calc(50% - 3px); }
+    #chatHistory { height: 150px; min-height: 150px; max-height: 150px; }
+    #chatPrompt { height: 104px; min-height: 104px; }
+    #chat .chat-action-row .btn { padding: 0 3px; font-size: calc(10px * var(--ui-scale)); }
+}
+
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-shell section">
+            <div class="app-header">
+                <div class="brand">
+                    <div class="brand-mark">Z</div>
+                    <div class="brand-copy">
+                        <div class="brand-title-row">
+                            <div class="section-title">ZHUANG-AI 修图插件</div>
+                            <div class="version-badge">1.3.6 正式版</div>
+                        </div>
+                        <div class="brand-subtitle">NONLINEAR RETOUCH WORKSPACE</div>
+                    </div>
+                </div>
+                <div class="app-header-actions">
+                    <button id="btnRefreshUi" class="icon-action-btn" type="button" title="刷新界面">↻</button>
+                </div>
+            </div>
+
+            <div id="status" class="status"></div>
+
+            <div class="tabs">
+                <div class="tab active" data-tab="img2img">生图</div>
+                <div class="tab" data-tab="chat">对话</div>
+                <div class="tab" data-tab="webui">WebUI</div>
+                <div class="tab" data-tab="batch" style="display: none;">批处理</div>
+                <div class="tab" data-tab="settings">设置</div>
+                <div class="tab" data-tab="logs">日志</div>
+            </div>
+
+            <div class="workspace">
+                <div id="img2img" class="tab-content active">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">AI 图像生成工作台</div>
+                            <div class="module-desc">读取 Photoshop 选区，结合提示词和预设生成可回写的修图结果。</div>
+                        </div>
+                        <div class="module-badge">IMG2IMG</div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="card-title">生成操作</div>
+                        <div class="btn-row">
+                            <button id="btnImg2Img" class="btn btn-primary">生成图像</button>
+                            <button id="btnAddToBatch" class="btn btn-secondary">添加到批处理</button>
+                        </div>
+                    </div>
+
+                    <div class="module-card field-stack">
+                        <div class="card-title">模型与输出</div>
+                        <div class="form-group model-select-group">
+                            <label for="imgModel">生图模型</label>
+                            <select id="imgModel">
+                                <option value="PS_NATIVE_NANO_BANANA">PS 原生 Banana Pro (Photoshop 官方)</option>
+                                <option value="nano-banana-pro">nano-banana-pro (GRS Nano Banana Pro)</option>
+                                <option value="nano-banana-fast">nano-banana-fast (GRS Nano Banana)</option>
+                                <option value="nano-banana-pro-4k-vip">nano-banana-pro-4k-vip (GRS Nano Banana 4K VIP)</option>
+                                <option value="gpt-image-2">gpt-image-2 / GPT-imagine-2 (GRS 图生图优化)</option>
+                            </select>
+                            <div class="info-text model-select-tip">比例按选区自动适配；gpt-image-2 会套用中文图生图编辑结构</div>
+                        </div>
+                        <div class="form-group img2img-inline-row">
+                            <div class="img2img-inline-cell">
+                                <label for="imgResolution">图片大小</label>
+                                <select id="imgResolution">
+                                    <option value="auto" selected>自适应分辨率</option>
+                                    <option value="1K">1K</option>
+                                    <option value="2K">2K</option>
+                                    <option value="4K">4K</option>
+                                </select>
+                            </div>
+                            <div class="img2img-inline-cell">
+                                <label for="imageCount">生成数量</label>
+                                <select id="imageCount">
+                                    <option value="">-- 选择数量 --</option>
+                                    <option value="1">1张</option>
+                                    <option value="2">2张</option>
+                                    <option value="3">3张</option>
+                                    <option value="4">4张</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="module-card field-stack">
+                        <div class="card-title">提示词与预设</div>
+                        <div class="form-group img2img-inline-row">
+                            <div class="img2img-inline-cell">
+                                <label for="presetCategory">预设分组</label>
+                                <select id="presetCategory"><option value="">-- 选择分类 --</option></select>
+                            </div>
+                            <div class="img2img-inline-cell">
+                                <label for="promptPreset">预设选择</label>
+                                <select id="promptPreset"><option value="">-- 选择预设 --</option></select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="imgPrompt">提示词</label>
+                            <textarea id="imgPrompt" class="prompt-textarea" wrap="soft" placeholder="请输入图像描述..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="presetName">预设名称</label>
+                            <input type="text" id="presetName" placeholder="预设名称" style="user-select: text; pointer-events: auto;">
+                        </div>
+                        <div class="form-group preset-actions-row">
+                            <div class="preset-actions">
+                                <button id="btnSavePreset" class="btn btn-secondary">保存预设</button>
+                                <button id="btnDeletePreset" class="btn btn-secondary">删除预设</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="module-card field-stack">
+                        <div class="card-title">Photoshop 选区上下文</div>
+                        <div id="selectionInfo" class="info-text">请在Photoshop中使用框选工具选择区域，点击「生成图像」</div>
+                        <div id="selectionPreview" class="preview-container">
+                            <div id="previewPlaceholder" class="placeholder-text empty-state">预览将显示在这里</div>
+                            <img id="previewImage" src="" alt="预览" class="selection-preview-img" style="display: none;">
+                        </div>
+                        <div class="reference-panel">
+                            <div class="reference-panel-head">
+                                <div class="card-title" style="margin:0;">参考图</div>
+                                <div class="reference-count"><span id="referenceImageCount">0</span>/4</div>
+                            </div>
+                            <div id="referenceImageSlots" class="reference-image-slots">
+                                <div class="reference-slot empty">图2</div>
+                                <div class="reference-slot empty">图3</div>
+                                <div class="reference-slot empty">图4</div>
+                                <div class="reference-slot empty">图5</div>
+                            </div>
+                            <div class="info-text">图2-图5会作为额外参考图随主选区一起发送；点击标签可重新抓取该槽位。</div>
+                        </div>
+                        <div class="btn-row">
+                            <button id="btnImg2ImgReadSelection" class="btn btn-secondary">读取选区</button>
+                            <button id="btnAddReferenceImage" class="btn btn-secondary">添加当前选区为参考图</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="chat" class="tab-content">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">文字对话</div>
+                            <div class="module-desc">使用 GRS 对话模型分析修图目标，也可结合 Photoshop 选区进行图文问答。</div>
+                        </div>
+                        <div class="module-badge">CHAT</div>
+                    </div>
+                    <div class="module-card field-stack">
+                        <div class="form-group">
+                            <label for="chatModel">对话模型</label>
+                            <select id="chatModel">
+                                <option value="grs/gpt-5.4">gpt-5.4 (GRS)</option>
+                                <option value="grs/gpt-5.5">gpt-5.5 (GRS)</option>
+                                <option value="grs/gemini-3-pro">gemini-3-pro (GRS)</option>
+                                <option value="grs/gemini-3.1-pro" selected>gemini-3.1-pro (GRS)</option>
+                                <option value="grs/gemini-2.5-pro">gemini-2.5-pro (GRS)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="module-card field-stack">
+                        <div class="card-title">聊天记录</div>
+                        <div id="chatHistory"><div class="info-text empty-state">暂无聊天记录</div></div>
+                    </div>
+                    <div class="module-card field-stack">
+                        <div class="form-group">
+                            <label for="chatPrompt">输入内容</label>
+                            <textarea id="chatPrompt" class="prompt-textarea" wrap="soft" placeholder="请输入问题，Enter 发送，Shift+Enter 换行，Tab 恢复上次输入..."></textarea>
+                            <div class="info-text chat-input-hint">Enter 发送，Shift+Enter 换行，Tab 恢复上次输入</div>
+                        </div>
+                        <div class="btn-row chat-action-row">
+                            <button id="btnChat" class="btn btn-primary">发送消息</button>
+                            <button id="btnChatReadSelection" class="btn btn-secondary">读取选区</button>
+                            <button id="btnChatSendToImg2Img" class="btn btn-secondary">发送到生图</button>
+                        </div>
+                    </div>
+                    <div class="module-card field-stack">
+                        <div class="card-title">图片上下文</div>
+                        <div id="chatSelectionInfo" class="info-text">可选：读取选区后让模型结合图片上下文回答</div>
+                        <div id="chatSelectionPreview" class="preview-container">
+                            <div id="chatPreviewPlaceholder" class="placeholder-text empty-state">预览将显示在这里</div>
+                            <img id="chatPreviewImage" src="" alt="聊天预览" class="selection-preview-img" style="display: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="webui" class="tab-content">
+                    <div class="module-hero"><div><div class="module-title">SD WebUI 工作流</div><div class="module-desc">连接本地 WebUI，统一管理模型、Lora、提示词和生成参数。</div></div><div class="module-badge">WEBUI</div></div>
+                    <div class="module-card"><div class="settings-save-wrap"><button id="btnWebUIGenerate" class="btn btn-success">一键生成</button><button id="btnWebUIImg2Img" class="btn btn-primary">刷新</button></div></div>
+                    <div class="module-card field-stack">
+                        <div class="card-title">模型资源</div>
+                        <div class="form-group settings-card"><label for="sdModel">模型列表</label><select id="sdModel"><option value="">-- 选择模型 --</option></select><div class="info-text">选择SD WebUI的Stable-diffusion模型</div></div>
+                        <div class="form-group settings-card"><label for="loraModel">Lora</label><select id="loraModel"><option value="">-- 选择Lora --</option></select><div class="info-text">选择后会自动添加触发词</div></div>
+                        <div class="form-group settings-card"><label for="webuiPreset">预设选择</label><select id="webuiPreset"><option value="">-- 选择预设 --</option></select><div class="info-text">选择预设后自动填充正向和反向提示词</div></div>
+                    </div>
+                    <div class="module-card field-stack">
+                        <div class="card-title">提示词</div>
+                        <div class="form-group settings-card"><label for="positivePrompt">正向提示词</label><textarea id="positivePrompt" class="prompt-textarea" placeholder="请输入英文画面描述..."></textarea></div>
+                        <div class="form-group settings-card"><label for="negativePrompt">反向提示词</label><textarea id="negativePrompt" class="prompt-textarea" placeholder="请输入不要出现的内容..."></textarea></div>
+                    </div>
+                    <div class="module-card settings-card parameter-card">
+                        <div class="card-title">生成参数</div>
+                        <div class="parameter-group">
+                            <div class="parameter-row-1">
+                                <div class="parameter-item"><label for="webuiImageCount">生成数量</label><input type="text" inputmode="numeric" id="webuiImageCount" class="webui-param-input" value="1"></div>
+                                <div class="parameter-item"><label for="steps">步数</label><input type="text" inputmode="numeric" id="steps" class="webui-param-input" value="20"></div>
+                                <div class="parameter-item"><label for="cfgScale">CFG Scale</label><input type="text" inputmode="decimal" id="cfgScale" class="webui-param-input" value="7"></div>
+                                <div class="parameter-item"><label for="denoisingStrength">重绘幅度</label><input type="text" inputmode="decimal" id="denoisingStrength" class="webui-param-input" value="0.35"></div>
+                            </div>
+                            <div class="parameter-item"><label for="samplingMethod">采样方法</label><select id="samplingMethod"><option value="Euler a">Euler a</option><option value="Euler">Euler</option><option value="Heun">Heun</option><option value="DPM2">DPM2</option><option value="DPM2 a">DPM2 a</option><option value="DPM++ 2M" selected>DPM++ 2M</option><option value="DPM++ 2S a">DPM++ 2S a</option><option value="DPM++ SDE">DPM++ SDE</option><option value="DPM fast">DPM fast</option><option value="DPM adaptive">DPM adaptive</option><option value="LMS">LMS</option><option value="DDIM">DDIM</option><option value="PLMS">PLMS</option></select></div>
+                            <div class="parameter-item"><label for="maxResolution">最大分辨率</label><select id="maxResolution"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024">1024x1024</option><option value="2048x2048">2048x2048</option><option value="custom">自定义</option></select></div>
+                            <div class="custom-resolution-row" id="customResolutionRow"><div class="parameter-item"><label for="customResolutionWidth">自定义宽度</label><input type="text" inputmode="numeric" id="customResolutionWidth" class="webui-param-input" value="1024" placeholder="宽"></div><div class="parameter-item"><label for="customResolutionHeight">自定义高度</label><input type="text" inputmode="numeric" id="customResolutionHeight" class="webui-param-input" value="1024" placeholder="高"></div></div>
+                        </div>
+                    </div>
+                    <div class="module-card settings-card" id="progressContainer" style="display: none;"><label>生成进度</label><div class="progress-bar-container"><div id="progressBar" class="progress-bar" style="width: 0%;"></div></div><div class="progress-text" id="progressText">0%</div></div>
+                </div>
+
+                <div id="batch" class="tab-content">
+                    <div class="module-hero"><div><div class="module-title">批处理</div><div class="module-desc">管理待处理的选区生成任务。</div></div><div class="module-badge">BATCH</div></div>
+                    <div class="module-card"><div class="btn-row"><button id="btnStartBatch" class="btn btn-primary">开始批处理</button><button id="btnClearBatch" class="btn btn-secondary">清空批处理</button></div></div>
+                    <div class="module-card field-stack"><div class="card-title">任务列表</div><div id="batchTaskList"><div class="info-text empty-state">暂无批处理任务</div></div></div>
+                </div>
+
+                <div id="settings" class="tab-content settings-redesigned">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">连接与输出设置</div>
+                            <div class="module-desc">先配置 GRS 密钥，再按需要连接本地 WebUI 和选择回写对齐方式。</div>
+                        </div>
+                        <div class="module-badge">CONFIG</div>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
+                        <div class="card-title">1. GRS 云端生成</div>
+                        <div class="info-text">生图、图生图和对话模型共用这里的 GRS 配置；这是插件最常用也最优先的设置。</div>
+                        <section class="settings-group" data-group="grs">
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label for="imgApiKey">GRS API 密钥</label>
+                                    <input type="password" id="imgApiKey" placeholder="请输入 GRS API 密钥">
+                                    <div class="info-text">用于 Nano Banana、gpt-image-2 和 GRS 对话模型。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="imgApiUrl">GRS API 地址</label>
+                                    <input type="text" id="imgApiUrl" placeholder="请输入API地址，例如：https://grsaiapi.com 或 https://grsai.dakka.com.cn">
+                                    <div class="info-text">仅支持 GRS 官方地址：grsaiapi.com / grsai.dakka.com.cn。</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
+                        <div class="card-title">2. 本地 WebUI 与回写</div>
+                        <div class="info-text">如果使用 SD WebUI 或需要控制生成图回到 Photoshop 的位置，再调整下面两项。</div>
+                        <section class="settings-group" data-group="other">
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label for="sdApiUrl">SD WebUI API 地址</label>
+                                    <input type="text" id="sdApiUrl" placeholder="请输入SD WebUI API地址，例如：http://localhost:7860" value="http://localhost:7860">
+                                    <div class="info-text">本地 WebUI 默认地址通常是 http://localhost:7860。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="alignmentMode">图片对齐算法</label>
+                                    <select id="alignmentMode" class="form-control">
+                                        <option value="normal">普通对齐</option>
+                                        <option value="fit-layer">缩放图层到选区</option>
+                                        <option value="smart">智能对齐</option>
+                                        <option value="force1x1">1:1 强制无偏移</option>
+                                    </select>
+                                    <div class="info-text">普通对齐不会改变画布大小；需要把回图缩放到选区时再选择缩放图层到选区。</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="form-group settings-save-wrap settings-save-standalone">
+                        <button id="btnSaveSettings" class="btn btn-success">保存全部设置</button>
+                    </div>
+
+                    <div class="module-card settings-help-card">
+                        <div class="card-title">说明与版本</div>
+                        <div class="notice-block"><div class="notice-section"><strong>插件信息</strong>
+插件咨询请QQ私聊 庄泽：3921209139
+GRSAI API网站：https://www.grsaicn.com/</div>
+<div class="notice-divider"></div>
+<div class="notice-section"><strong>使用说明</strong>
+图片出现变形再次计算即可
+⚠️ 免责：本插件仅供合法图像后期处理使用。
+作者不对用户生成内容承担责任。使用即表示同意条款。</div>
+<div class="notice-divider"></div>
+<div class="notice-section"><strong>作者与鸣谢</strong>
+插件作者：庄泽/零柒zero
+提示词参考：夏三七/橙子Orange
+图片对齐算法开源作者：草鱼
+下载插件请联系作者QQ:3921209139
+如果你是从任何渠道付费获取本插件的话，请立即举报商家
+本插件完全免费</div>
+<div class="notice-divider"></div>
+<div class="notice-section"><strong>版本历史</strong>
+<strong>1.3.6 正式版（2026-05-14）</strong>
+1. 修复 ZHUANG-AI mini 文字对话，兼容 GRS /v1/chat/completions 接口。
+2. mini 对话模型名不再附加 grs/ 前缀，改为发送纯文本消息 payload。
+3. 优化 mini 对话响应解析，兼容多种 choices / message / content 返回结构。
+4. 修复 mini 本地设置读取异常，localStorage 解析失败时自动回退默认配置。
+5. 更新 mini Service Worker 缓存到 v2，减少旧缓存导致的页面不刷新问题。
+6. 修复 Photoshop 插件内 GRS 对话路由与旧密钥兼容问题。
+7. 恢复插件多轮文字对话、选区图文上下文和错误提示显示。
+8. 同步项目目录重组：插件源文件、mini 源文件、GitHub 官网与发布内容分离管理。
+9. 更新干净的 Photoshop Plug-ins 安装 ZIP，避免发布包混入开发目录或缓存文件。
+<strong>1.3.5 正式版（2026-05-12）</strong>
+1. 新增图生图多参考图功能：主图与参考图分离，最多支持 4 张参考图。
+2. 参考图支持从 Photoshop 当前选区添加、缩略图预览、删除，并随 GRS 图生图请求一起发送。
+3. 参考图可随预设保存/加载，也会随批处理任务保留，避免排队后丢失参考图上下文。
+4. 调整生图界面布局：生成图像与添加到批处理并排，读取选区与添加参考图并排，移除清空参考图按钮。
+5. 修复参考图槽位在 Photoshop UXP 中不显示的问题，改为更稳定的固定尺寸 flex 缩略图布局。
+6. 优化伪下拉框层级，打开下拉时隐藏原生文本输入框，避免输入框覆盖下拉面板。
+7. 修复智能对齐会调用 resizeImage 改变当前 Photoshop 文档/画布尺寸的问题；普通对齐不再改变画布大小。
+8. 新增“缩放图层到选区”对齐选项，需要回图严格贴合选区时可手动启用。
+9. 同步更新打包目录 dist，确保开发版与安装包内容一致。
+10. 接入 GRS /v1/chat/completions 文字生成接口，对话功能统一使用 GRS API 密钥。
+11. 清理文字生成界面的 OpenAI、NewAPI、Google 等非 GRS 模型入口，仅保留 GRS 模型。
+12. 更新 GRS 对话模型：gpt-5.4、gpt-5.5、gemini-3-pro、gemini-3.1-pro、gemini-2.5-pro。
+13. 支持对话读取 Photoshop 选区后进行图文问答，发送格式兼容 GRS 多模态消息。
+14. 调整生图预设区域顺序：预设分组/预设选择位于提示词上方，预设名称与保存/删除按钮位于提示词下方。
+15. 移除左侧悬浮修图工具栏及相关预留空白，恢复整体界面居中布局。
+16. 修复移除悬浮窗后导致的 CSS 未闭合问题，恢复 Photoshop UXP 面板样式渲染。
+17. 优化窄面板下的容器间距，减少左侧空白与横向挤压。
+18. 同步更新打包目录 dist，确保开发版与安装包内容一致。</div></div>
+                    </div>
+                </div>
+
+                <div id="logs" class="tab-content">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">运行日志</div>
+                            <div class="module-desc">按时间查看生成、对话和错误记录，快速定位接口或参数问题。</div>
+                        </div>
+                        <div class="module-badge">LOGS</div>
+                    </div>
+                    <div class="module-card logs-toolbar">
+                        <div class="form-group logs-search-group">
+                            <label for="logSearch">搜索日志</label>
+                            <input type="text" id="logSearch" placeholder="输入模型、提示词、状态或错误内容...">
+                        </div>
+                        <div class="btn-row logs-action-row">
+                            <button id="btnExportLogs" class="btn btn-secondary">导出日志</button>
+                            <button id="btnClearLogs" class="btn btn-secondary danger-action">清空日志</button>
+                        </div>
+                    </div>
+                    <div class="module-card logs-list-card">
+                        <div class="card-title">日志列表</div>
+                        <div id="logContainer" class="log-container"><div class="info-text empty-state">暂无日志记录</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <script src="index.js"></script>
+</body>
+</html>
