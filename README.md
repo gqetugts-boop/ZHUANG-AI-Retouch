@@ -115,7 +115,7 @@ The release package is also included in this repository:
 
 ## 使用教程 / Tutorial
 
-- 官网教程 / Website tutorial: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/tutorial.html
+- 官网教程 / Website tutorial: https://github-project/ZHUANG-AI 1.3.6/使用教程.html
 - 本地教程 / Local tutorial: `ZHUANG-AI 1.3.6/使用教程.html`
 
 ## 版本 / Version
