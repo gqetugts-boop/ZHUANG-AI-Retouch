@@ -167,23 +167,31 @@ The release package is also included in this repository:
 - Synced the reorganized project layout for plugin source, mini source, and GitHub release content.
 - Rebuilt the clean Photoshop Plug-ins ZIP.
 
-### 1.3.5 正式版
+## 版本 / Version
 
-- 新增多参考图功能，最多支持 4 张参考图。
-- 参考图可预览、删除、重新抓取。
-- 参考图可随预设和批处理任务保存。
-- 优化生图界面布局。
-- 修复回图可能改变 Photoshop 画布大小的问题。
-- 更新官网、教程和发布包。
+### 1.3.6 正式版
 
-### 1.3.5 Stable
+- 修复 ZHUANG-AI mini 文字对话，兼容 GRS /v1/chat/completions 接口。
+- mini 对话模型名不再附加 grs/ 前缀，改为发送纯文本消息 payload。
+- 优化 mini 对话响应解析，兼容多种 choices / message / content 返回结构。
+- 修复 mini 本地设置读取异常，localStorage 解析失败时自动回退默认配置。
+- 更新 mini Service Worker 缓存到 v2，减少旧缓存导致的页面不刷新问题。
+- 修复 Photoshop 插件内 GRS 对话路由与旧密钥兼容问题。
+- 恢复插件多轮文字对话、选区图文上下文和错误提示显示。
+- 同步项目目录重组：插件源文件、mini 源文件、GitHub 官网与发布内容分离管理。
+- 更新干净的 Photoshop Plug-ins 安装 ZIP。
 
-- Added multi-reference image support, up to 4 reference images.
-- Reference images can be previewed, removed, and recaptured.
-- Reference images are preserved in presets and batch tasks.
-- Improved image generation UI layout.
-- Fixed an issue where image placement could resize the Photoshop canvas.
-- Updated website, tutorial, and release package.
+### 1.3.6 Stable
+
+- Fixed ZHUANG-AI mini text chat for the GRS /v1/chat/completions endpoint.
+- Removed the grs/ prefix from mini chat model names and now sends text-only message payloads.
+- Improved mini chat response parsing across different choices / message / content shapes.
+- Made mini localStorage parsing safer with fallback defaults.
+- Updated the mini Service Worker cache to v2 to reduce stale PWA cache issues.
+- Fixed GRS chat routing and legacy key compatibility in the Photoshop plugin.
+- Restored multi-turn chat, Photoshop image context, response parsing, and visible chat errors.
+- Synced the reorganized project layout for plugin source, mini source, and GitHub release content.
+- Rebuilt the clean Photoshop Plug-ins ZIP.
 
 ## 声明 / Notice
 
