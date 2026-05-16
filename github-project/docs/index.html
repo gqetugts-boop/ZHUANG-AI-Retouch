@@ -382,7 +382,7 @@
     <div class="hero-card">
      <div class="app-preview">
       <div class="preview-top"><span class="preview-dot"></span><span class="preview-dot"></span><span class="preview-dot"></span></div>
-      <div class="preview-title"><strong>ZHUANG-AI 修图插件</strong><span class="badge">1.3.7 正式版</span></div>
+      <div class="preview-title"><strong>ZHUANG-AI 修图插件</strong><span class="badge">1.3.8 正式版</span></div>
       <div class="preview-block">
        <div class="preview-line mid"></div>
        <div class="preview-line"></div>
@@ -414,7 +414,7 @@
      <div class="project-card">
       <div class="project-icon"><img src="assets/icon_D.png" alt="ZHUANG-AI 图标"></div>
       <div>
-       <h3>ZHUANG-AI 1.3.7 正式版</h3>
+       <h3>ZHUANG-AI 1.3.8 正式版</h3>
        <p>ZHUANG-AI 是当前已经完成的 Photoshop 原生 UXP 插件，定位是把 AI 生图和文字对话真正放进修图流程里。核心优势是接入 gptimagine-2 与 Nano Banana 全系列，同时接入 Gemini Gpt全系列文字模型；配合 Photoshop 选区、多参考图、预设、批处理、WebUI 和回图对齐，形成完整的 AI 修图闭环。</p>
        <div class="meta-row">
         <span class="pill">已完成</span>
@@ -426,7 +426,7 @@
         <span class="pill">4 张参考图</span>
        </div>
        <div class="hero-actions" style="margin-top:0">
-        <a class="btn primary" href="downloads/ZHUANG-AI-1.3.7.zip">下载插件</a>
+        <a class="btn primary" href="downloads/ZHUANG-AI-1.3.8.zip">下载插件</a>
         <a class="btn" href="tutorial.html">安装教程</a>
         <a class="btn" href="#contact">加入交流群</a>
        </div>
@@ -519,10 +519,10 @@
     <div class="download-box">
      <div>
       <div class="section-kicker">Download</div>
-      <h2 style="margin-bottom:6px">下载 ZHUANG-AI 1.3.7</h2>
-      <p>下载后解压，把整个 <strong>ZHUANG-AI 1.3.7</strong> 文件夹复制到 Photoshop Plug-ins 目录，或使用 UXP Developer Tool 加载里面的 manifest.json。安装和使用遇到问题，可加入插件交流群：<strong>1103212650</strong>。</p>
+      <h2 style="margin-bottom:6px">下载 ZHUANG-AI 1.3.8</h2>
+      <p>下载后解压，把整个 <strong>ZHUANG-AI 1.3.8</strong> 文件夹复制到 Photoshop Plug-ins 目录，或使用 UXP Developer Tool 加载里面的 manifest.json。安装和使用遇到问题，可加入插件交流群：<strong>1103212650</strong>。</p>
      </div>
-     <a class="btn primary" href="downloads/ZHUANG-AI-1.3.7.zip">立即下载</a>
+     <a class="btn primary" href="downloads/ZHUANG-AI-1.3.8.zip">立即下载</a>
     </div>
      <div class="download-box" style="margin-top:14px">
     <div>
@@ -550,14 +550,12 @@
     </div>
     <div class="timeline">
      <div class="timeline-item">
-      <strong>1.3.7 正式版（2026-05-16）</strong>
+      <strong>1.3.8 正式版（2026-05-16）</strong>
       <ul>
-       <li>新增独立开屏页，启动后先显示公告、更新检查、插件信息、作者与致谢。</li>
-       <li>公告与更新检查固定读取服务器 https://www.syyyy.online。</li>
-       <li>设置界面改为可收纳分组，并将 NewAPI 与公告更新设置分开。</li>
-       <li>主要下拉框统一改为伪下拉框，优化 UXP 面板内的选择体验。</li>
-       <li>新增 NewAPI 对话、生图、模型拉取、余额查询入口，以及 GRS 积分余额查询。</li>
-       <li>优化启动初始化和发布包同步，降低插件加载超时概率。</li>
+       <li>修复 GRS 图生图轮询成功但无图时被误判为完成的问题，避免继续报“无法从响应中提取图像”。</li>
+       <li>补强任务 ID 与结果提取兼容范围，适配更多返回结构并改进失败原因显示。</li>
+       <li>修复预设在 UXP 文件系统尚未就绪时被提前缓存为空的问题，首次启动即可正常读取 yushe.json。</li>
+       <li>保留批处理任务的参考图上下文，并同步教程、发布包与官网版本号到 1.3.8。</li>
       </ul>
      </div>
      <div class="timeline-item">

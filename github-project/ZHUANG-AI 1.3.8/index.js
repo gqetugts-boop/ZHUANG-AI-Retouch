@@ -29,7 +29,7 @@
 
     const DEFAULT_SERVER_API_URL = "https://www.syyyy.online";
     const SERVER_API_URL = DEFAULT_SERVER_API_URL;
-    const PLUGIN_VERSION = "1.3.7";
+    const PLUGIN_VERSION = "1.3.8";
     const TEXT_INPUT_SELECTOR = [
         'textarea',
         'sp-textarea',

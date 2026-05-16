@@ -29,7 +29,7 @@
 
     const DEFAULT_SERVER_API_URL = "https://www.syyyy.online";
     const SERVER_API_URL = DEFAULT_SERVER_API_URL;
-    const PLUGIN_VERSION = "1.3.7";
+    const PLUGIN_VERSION = "1.3.8";
     const TEXT_INPUT_SELECTOR = [
         'textarea',
         'sp-textarea',
@@ -1680,6 +1680,11 @@
                 if (payload.data && typeof payload.data.id === 'string' && payload.data.id) return payload.data.id;
                 if (typeof payload.taskId === 'string' && payload.taskId) return payload.taskId;
                 if (typeof payload.task_id === 'string' && payload.task_id) return payload.task_id;
+                if (payload.data && typeof payload.data.taskId === 'string' && payload.data.taskId) return payload.data.taskId;
+                if (payload.data && typeof payload.data.task_id === 'string' && payload.data.task_id) return payload.data.task_id;
+                if (payload.result && typeof payload.result.id === 'string' && payload.result.id) return payload.result.id;
+                if (payload.result && typeof payload.result.taskId === 'string' && payload.result.taskId) return payload.result.taskId;
+                if (payload.result && typeof payload.result.task_id === 'string' && payload.result.task_id) return payload.result.task_id;
                 return '';
             };
 
@@ -1688,6 +1693,22 @@
                     return payload.data;
                 }
                 return payload;
+            };
+
+            const getTaskStatus = function(payload) {
+                return String(payload && (payload.status || payload.state) || '').toLowerCase();
+            };
+
+            const describeResultPayload = function(payload) {
+                if (!payload || typeof payload !== 'object') return '无有效响应体';
+                const fields = Object.keys(payload).slice(0, 10).join(', ') || '无字段';
+                const message = payload.message || payload.error || payload.failure_reason || payload.detail || '';
+                return '状态: ' + (getTaskStatus(payload) || 'unknown') + '；字段: ' + fields + (message ? '；消息: ' + message : '');
+            };
+
+            const extractImageFromTaskPayload = function(payload) {
+                if (!payload || typeof payload !== 'object') return null;
+                return extractImageFromResponse(payload.data && typeof payload.data === 'object' ? payload.data : payload);
             };
 
             const pollGrsResult = async function(baseUrl, authKey, taskId, signal) {
@@ -1731,18 +1752,24 @@
                         }
 
                         const resultData = await response.json();
-                        if (extractImageFromResponse(resultData)) {
+                        const directImage = extractImageFromResponse(resultData);
+                        if (directImage) {
                             return { success: true, data: resultData };
                         }
 
                         const resultPayload = unwrapResultPayload(resultData) || {};
-                        const status = String(resultPayload.status || '').toLowerCase();
-                        if (status === 'succeeded' || status === 'success' || status === 'completed' || status === 'done') {
+                        const payloadImage = extractImageFromTaskPayload(resultPayload);
+                        if (payloadImage) {
                             return { success: true, data: resultData };
                         }
+
+                        const status = getTaskStatus(resultPayload);
                         if (status === 'failed' || status === 'failure' || status === 'error' || status === 'cancelled' || status === 'canceled') {
-                            const failureReason = resultPayload.error || resultPayload.failure_reason || '绘图任务失败';
+                            const failureReason = resultPayload.error || resultPayload.failure_reason || resultPayload.message || '绘图任务失败';
                             return { error: failureReason };
+                        }
+                        if (status === 'succeeded' || status === 'success' || status === 'completed' || status === 'done') {
+                            return { error: '任务已完成但未返回可用图像。' + describeResultPayload(resultPayload) };
                         }
                     } catch (pollError) {
                         if (pollError.name === 'AbortError') {
@@ -2526,8 +2553,8 @@
                 presetsLoadPromise = null;
             });
         }
-        await presetsLoadPromise;
-        presetsLoaded = true;
+        const loadState = await presetsLoadPromise;
+        presetsLoaded = !loadState || loadState.ready !== false;
         return currentAllPresets;
     }
 
@@ -2554,17 +2581,17 @@
         try {
             if (!uxpFs) {
                 console.warn("uxpFs 不可用，跳过读取 yushe.json");
-                return [];
+                return { presets: [], ready: false };
             }
             const pluginFolder = await uxpFs.getPluginFolder();
             const file = await pluginFolder.getEntry("yushe.json");
             const content = await file.read();
             const presets = dedupePresetEntries(JSON.parse(content));
             debugLog("成功加载本地预设:", presets);
-            return presets;
+            return { presets: presets, ready: true };
         } catch (e) {
             console.error("读取 yushe.json 失败:", e);
-            return [];
+            return { presets: [], ready: true };
         }
     }
 
@@ -2899,8 +2926,11 @@
     }
 
     async function loadPresets() {
-        const yushePresets = await loadYushePresets();
-        const browserFallbackPresets = uxpFs ? [] : (Config.getPresets() || []);
+        initCompatibility();
+        const yusheResult = await loadYushePresets();
+        const yushePresets = yusheResult && Array.isArray(yusheResult.presets) ? yusheResult.presets : [];
+        const sourceReady = !compatibility.isUXPAvailable || !!(yusheResult && yusheResult.ready);
+        const browserFallbackPresets = sourceReady && uxpFs ? [] : (Config.getPresets() || []);
         currentAllPresets = dedupePresetEntries([]
             .concat(yushePresets || [])
             .concat(browserFallbackPresets || [])
@@ -2908,13 +2938,14 @@
 
         debugLog('加载预设中...');
         debugLog('yushe.json 预设数量:', yushePresets.length);
-        if (!uxpFs) {
+        if (browserFallbackPresets.length) {
             debugLog('浏览器本地预设数量:', browserFallbackPresets.length);
         }
         debugLog('总预设数量:', currentAllPresets.length);
 
         loadPresetCategories(currentAllPresets);
         updatePresetSelect(currentAllPresets);
+        return { ready: sourceReady };
     }
     
     function loadPresetCategories(presets) {
@@ -2988,7 +3019,8 @@
         
         try {
             if (uxpFs) {
-                const basePresets = await loadYushePresets();
+                const basePresetsResult = await loadYushePresets();
+                const basePresets = basePresetsResult && Array.isArray(basePresetsResult.presets) ? basePresetsResult.presets : [];
                 const nextPresets = Array.isArray(basePresets) ? basePresets.slice() : [];
                 const existingIndex = nextPresets.findIndex(p => p && p.name === presetName);
                 const nextEntry = {
@@ -4350,13 +4382,14 @@
                         await downloadAndPlaceDocument(imageUrl, width, height, task.prompt, 'img2img', task.timestamp + ' (任务 ' + (index + 1) + ')', task.model);
                         successCount++;
                     } else {
+                        const extractionError = result.error || '无法从响应中提取图像';
                         Config.addLog({
                             timestamp: task.timestamp,
                             model: task.model,
                             prompt: task.prompt,
                             type: 'batch',
                             status: '失败',
-                            error: '无法从响应中提取图像'
+                            error: extractionError
                         });
                     }
                 } else {
@@ -5713,13 +5746,14 @@
                             await downloadAndPlaceDocument(imageUrl, width, height, prompt, 'img2img', timestamp + ' (' + (index + 1) + ')', model);
                             return true;
                         } else {
+                            const extractionError = result.error || '无法从响应中提取图像';
                             Config.addLog({
                                 timestamp: timestamp,
                                 model: model,
                                 prompt: prompt,
                                 type: 'img2img',
                                 status: '失败',
-                                error: '无法从响应中提取图像'
+                                error: extractionError
                             });
                             return false;
                         }

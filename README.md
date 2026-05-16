@@ -13,8 +13,8 @@ The main folder is now organized by purpose:
 - `../mini/` — ZHUANG-AI mini 手机端 Web / PWA 源文件 / mobile Web / PWA source files
 - `./docs/` — GitHub Pages 官网与教程 / website and tutorials for GitHub Pages
 - `./dist/` — 发布包与下载文件 / release packages and downloadable files
-- `./ZHUANG-AI 1.3.7/` — Photoshop 插件发布目录 / Photoshop plugin release folder
-- `./ZHUANG-AI 1.3.7.zip` — Photoshop 插件发布压缩包 / Photoshop plugin release ZIP
+- `./ZHUANG-AI 1.3.8/` — Photoshop 插件发布目录 / Photoshop plugin release folder
+- `./ZHUANG-AI 1.3.8.zip` — Photoshop 插件发布压缩包 / Photoshop plugin release ZIP
 
 如果只想安装到 Photoshop `Plug-ins` 目录，推荐使用干净的拖拽安装包：
 
@@ -36,7 +36,7 @@ After extracting it, drag or copy the whole `ZHUANG-AI-PS-Plugins` folder into P
 
 ## 项目矩阵 / Project Suite
 
-### ZHUANG-AI 1.3.7 正式版
+### ZHUANG-AI 1.3.8 正式版
 
 当前已完成并可下载的 Photoshop UXP 插件。
 
@@ -100,8 +100,8 @@ https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/
 
 The release package is also included in this repository:
 
-- `ZHUANG-AI 1.3.7.zip`
-- `ZHUANG-AI 1.3.7/`
+- `ZHUANG-AI 1.3.8.zip`
+- `ZHUANG-AI 1.3.8/`
 - `dist/ZHUANG-AI-mini.zip`
 - `dist/ZHUANG-AI-mini-PWA.zip`
 
@@ -110,16 +110,16 @@ The release package is also included in this repository:
 ### 方法 1：复制到 Photoshop 插件目录
 
 1. 退出 Photoshop。
-2. 解压 `ZHUANG-AI 1.3.7.zip`。
-3. 把整个 `ZHUANG-AI 1.3.7` 文件夹复制到 Photoshop 的 `Plug-ins` 插件目录。
+2. 解压 `ZHUANG-AI 1.3.8.zip`。
+3. 把整个 `ZHUANG-AI 1.3.8` 文件夹复制到 Photoshop 的 `Plug-ins` 插件目录。
 4. 重新打开 Photoshop。
 5. 在顶部菜单 `插件 / Plugins` 中打开 `ZHUANG-AI 修图插件`。
 
 ### Method 1: Copy to Photoshop Plug-ins folder
 
 1. Quit Photoshop.
-2. Extract `ZHUANG-AI 1.3.7.zip`.
-3. Copy the whole `ZHUANG-AI 1.3.7` folder to Photoshop `Plug-ins`.
+2. Extract `ZHUANG-AI 1.3.8.zip`.
+3. Copy the whole `ZHUANG-AI 1.3.8` folder to Photoshop `Plug-ins`.
 4. Reopen Photoshop.
 5. Open `ZHUANG-AI 修图插件` from `Plugins`.
 
@@ -127,24 +127,24 @@ The release package is also included in this repository:
 
 1. 打开 UXP Developer Tool。
 2. 点击 `Add Plugin`。
-3. 选择 `ZHUANG-AI 1.3.7/manifest.json`。
+3. 选择 `ZHUANG-AI 1.3.8/manifest.json`。
 4. 点击 `Load` 或 `Reload`。
 
 ### Method 2: UXP Developer Tool
 
 1. Open UXP Developer Tool.
 2. Click `Add Plugin`.
-3. Select `ZHUANG-AI 1.3.7/manifest.json`.
+3. Select `ZHUANG-AI 1.3.8/manifest.json`.
 4. Click `Load` or `Reload`.
 
 ## 使用教程 / Tutorial
 
 - 官网教程 / Website tutorial: https://gqetugts-boop.github.io/ZHUANG-AI-Retouch/tutorial.html
-- 本地教程 / Local tutorial: `ZHUANG-AI 1.3.7/使用教程.html`
+- 本地教程 / Local tutorial: `ZHUANG-AI 1.3.8/使用教程.html`
 
 ## 版本 / Version
 
-### 1.3.7 正式版
+### 1.3.8 正式版
 
 - 新增独立开屏页，启动后先显示公告、更新检查、插件信息、作者与致谢。
 - 公告与更新检查固定读取服务器 `https://www.syyyy.online`，不再依赖用户手动填写公告服务器。
@@ -153,9 +153,9 @@ The release package is also included in this repository:
 - 新增 NewAPI 对话、生图、模型拉取和余额查询入口。
 - 新增 GRS 积分余额查询入口，并优化错误提示显示。
 - 优化插件启动阶段初始化，降低 UXP Developer Tool 加载超时概率。
-- 同步发布包版本到 1.3.7。
+- 同步发布包版本到 1.3.8。
 
-### 1.3.7 Stable
+### 1.3.8 Stable
 
 - Added a standalone splash screen showing announcements, update status, plugin info, author, and credits before entering the workspace.
 - Fixed announcement and update checks to the server `https://www.syyyy.online`.
@@ -164,7 +164,7 @@ The release package is also included in this repository:
 - Added NewAPI chat, image generation, model fetching, and balance query entry points.
 - Added GRS credit balance query and improved visible error messages.
 - Optimized startup initialization to reduce UXP Developer Tool load timeout risk.
-- Synced release packages to version 1.3.7.
+- Synced release packages to version 1.3.8.
 
 ## 声明 / Notice
 

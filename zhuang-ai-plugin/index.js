@@ -29,7 +29,7 @@
 
     const DEFAULT_SERVER_API_URL = "https://www.syyyy.online";
     const SERVER_API_URL = DEFAULT_SERVER_API_URL;
-    const PLUGIN_VERSION = "1.3.7";
+    const PLUGIN_VERSION = "1.3.8";
     const TEXT_INPUT_SELECTOR = [
         'textarea',
         'sp-textarea',
@@ -1680,6 +1680,11 @@
                 if (payload.data && typeof payload.data.id === 'string' && payload.data.id) return payload.data.id;
                 if (typeof payload.taskId === 'string' && payload.taskId) return payload.taskId;
                 if (typeof payload.task_id === 'string' && payload.task_id) return payload.task_id;
+                if (payload.data && typeof payload.data.taskId === 'string' && payload.data.taskId) return payload.data.taskId;
+                if (payload.data && typeof payload.data.task_id === 'string' && payload.data.task_id) return payload.data.task_id;
+                if (payload.result && typeof payload.result.id === 'string' && payload.result.id) return payload.result.id;
+                if (payload.result && typeof payload.result.taskId === 'string' && payload.result.taskId) return payload.result.taskId;
+                if (payload.result && typeof payload.result.task_id === 'string' && payload.result.task_id) return payload.result.task_id;
                 return '';
             };
 
@@ -1688,6 +1693,22 @@
                     return payload.data;
                 }
                 return payload;
+            };
+
+            const getTaskStatus = function(payload) {
+                return String(payload && (payload.status || payload.state) || '').toLowerCase();
+            };
+
+            const describeResultPayload = function(payload) {
+                if (!payload || typeof payload !== 'object') return '无有效响应体';
+                const fields = Object.keys(payload).slice(0, 10).join(', ') || '无字段';
+                const message = payload.message || payload.error || payload.failure_reason || payload.detail || '';
+                return '状态: ' + (getTaskStatus(payload) || 'unknown') + '；字段: ' + fields + (message ? '；消息: ' + message : '');
+            };
+
+            const extractImageFromTaskPayload = function(payload) {
+                if (!payload || typeof payload !== 'object') return null;
+                return extractImageFromResponse(payload.data && typeof payload.data === 'object' ? payload.data : payload);
             };
 
             const pollGrsResult = async function(baseUrl, authKey, taskId, signal) {
@@ -1731,18 +1752,24 @@
                         }
 
                         const resultData = await response.json();
-                        if (extractImageFromResponse(resultData)) {
+                        const directImage = extractImageFromResponse(resultData);
+                        if (directImage) {
                             return { success: true, data: resultData };
                         }
 
                         const resultPayload = unwrapResultPayload(resultData) || {};
-                        const status = String(resultPayload.status || '').toLowerCase();
-                        if (status === 'succeeded' || status === 'success' || status === 'completed' || status === 'done') {
+                        const payloadImage = extractImageFromTaskPayload(resultPayload);
+                        if (payloadImage) {
                             return { success: true, data: resultData };
                         }
+
+                        const status = getTaskStatus(resultPayload);
                         if (status === 'failed' || status === 'failure' || status === 'error' || status === 'cancelled' || status === 'canceled') {
-                            const failureReason = resultPayload.error || resultPayload.failure_reason || '绘图任务失败';
+                            const failureReason = resultPayload.error || resultPayload.failure_reason || resultPayload.message || '绘图任务失败';
                             return { error: failureReason };
+                        }
+                        if (status === 'succeeded' || status === 'success' || status === 'completed' || status === 'done') {
+                            return { error: '任务已完成但未返回可用图像。' + describeResultPayload(resultPayload) };
                         }
                     } catch (pollError) {
                         if (pollError.name === 'AbortError') {
@@ -2526,8 +2553,8 @@
                 presetsLoadPromise = null;
             });
         }
-        await presetsLoadPromise;
-        presetsLoaded = true;
+        const loadState = await presetsLoadPromise;
+        presetsLoaded = !loadState || loadState.ready !== false;
         return currentAllPresets;
     }
 
@@ -2554,17 +2581,17 @@
         try {
             if (!uxpFs) {
                 console.warn("uxpFs 不可用，跳过读取 yushe.json");
-                return [];
+                return { presets: [], ready: false };
             }
             const pluginFolder = await uxpFs.getPluginFolder();
             const file = await pluginFolder.getEntry("yushe.json");
             const content = await file.read();
             const presets = dedupePresetEntries(JSON.parse(content));
             debugLog("成功加载本地预设:", presets);
-            return presets;
+            return { presets: presets, ready: true };
         } catch (e) {
             console.error("读取 yushe.json 失败:", e);
-            return [];
+            return { presets: [], ready: true };
         }
     }
 
@@ -2899,8 +2926,11 @@
     }
 
     async function loadPresets() {
-        const yushePresets = await loadYushePresets();
-        const browserFallbackPresets = uxpFs ? [] : (Config.getPresets() || []);
+        initCompatibility();
+        const yusheResult = await loadYushePresets();
+        const yushePresets = yusheResult && Array.isArray(yusheResult.presets) ? yusheResult.presets : [];
+        const sourceReady = !compatibility.isUXPAvailable || !!(yusheResult && yusheResult.ready);
+        const browserFallbackPresets = sourceReady && uxpFs ? [] : (Config.getPresets() || []);
         currentAllPresets = dedupePresetEntries([]
             .concat(yushePresets || [])
             .concat(browserFallbackPresets || [])
@@ -2908,13 +2938,14 @@
 
         debugLog('加载预设中...');
         debugLog('yushe.json 预设数量:', yushePresets.length);
-        if (!uxpFs) {
+        if (browserFallbackPresets.length) {
             debugLog('浏览器本地预设数量:', browserFallbackPresets.length);
         }
         debugLog('总预设数量:', currentAllPresets.length);
 
         loadPresetCategories(currentAllPresets);
         updatePresetSelect(currentAllPresets);
+        return { ready: sourceReady };
     }
     
     function loadPresetCategories(presets) {
@@ -2988,7 +3019,8 @@
         
         try {
             if (uxpFs) {
-                const basePresets = await loadYushePresets();
+                const basePresetsResult = await loadYushePresets();
+                const basePresets = basePresetsResult && Array.isArray(basePresetsResult.presets) ? basePresetsResult.presets : [];
                 const nextPresets = Array.isArray(basePresets) ? basePresets.slice() : [];
                 const existingIndex = nextPresets.findIndex(p => p && p.name === presetName);
                 const nextEntry = {
@@ -4350,13 +4382,14 @@
                         await downloadAndPlaceDocument(imageUrl, width, height, task.prompt, 'img2img', task.timestamp + ' (任务 ' + (index + 1) + ')', task.model);
                         successCount++;
                     } else {
+                        const extractionError = result.error || '无法从响应中提取图像';
                         Config.addLog({
                             timestamp: task.timestamp,
                             model: task.model,
                             prompt: task.prompt,
                             type: 'batch',
                             status: '失败',
-                            error: '无法从响应中提取图像'
+                            error: extractionError
                         });
                     }
                 } else {
@@ -5713,13 +5746,14 @@
                             await downloadAndPlaceDocument(imageUrl, width, height, prompt, 'img2img', timestamp + ' (' + (index + 1) + ')', model);
                             return true;
                         } else {
+                            const extractionError = result.error || '无法从响应中提取图像';
                             Config.addLog({
                                 timestamp: timestamp,
                                 model: model,
                                 prompt: prompt,
                                 type: 'img2img',
                                 status: '失败',
-                                error: '无法从响应中提取图像'
+                                error: extractionError
                             });
                             return false;
                         }
@@ -5787,141 +5821,95 @@
         }
     }
 
+    function makeImageDataUrl(value) {
+        if (!value) return '';
+        if (/^data:image\//i.test(value) || /^https?:\/\//i.test(value)) return value;
+        return 'data:image/png;base64,' + value;
+    }
+
+    function collectImageCandidates(value, results) {
+        if (!value) return results;
+
+        if (typeof value === 'string') {
+            const trimmed = value.trim();
+            if (/^(https?:\/\/|data:image\/)/i.test(trimmed)) {
+                results.push(trimmed);
+            }
+            return results;
+        }
+
+        if (Array.isArray(value)) {
+            value.forEach(function(item) {
+                collectImageCandidates(item, results);
+            });
+            return results;
+        }
+
+        if (typeof value !== 'object') {
+            return results;
+        }
+
+        ['url', 'image', 'image_url', 'output', 'b64_json', 'response_url', 'download_url', 'uri', 'src'].forEach(function(key) {
+            if (typeof value[key] === 'string') {
+                results.push(key === 'b64_json' ? makeImageDataUrl(value[key]) : value[key]);
+            }
+        });
+
+        ['data', 'results', 'images', 'result', 'output', 'outputs', 'items', 'attachments'].forEach(function(key) {
+            collectImageCandidates(value[key], results);
+        });
+
+        return results;
+    }
+
+    function isLikelyImageResult(value) {
+        if (!value) return false;
+        if (/^data:image\//i.test(value)) return true;
+
+        try {
+            const parsed = new URL(value.replace(/\\\//g, '/'));
+            return /\.(png|jpe?g|webp|gif|avif)(?:$|[?#])/i.test(parsed.pathname)
+                || /(?:^|\.)(oaidalleapiprodscus|blob|grs|claude|image|img|cdn)\./i.test(parsed.hostname);
+        } catch (error) {
+            return /\.(png|jpe?g|webp|gif|avif)(?:$|[?#])/i.test(value);
+        }
+    }
+
     function extractImageFromResponse(response) {
         try {
             debugLog('开始提取图像URL...');
             debugLog('响应类型:', typeof response);
             debugLog('响应结构:', JSON.stringify(response, null, 2));
-            
-            // 检查OpenAI格式 (choices -> message -> content)
-            if (response.choices && response.choices[0] && response.choices[0].message && response.choices[0].message.content) {
-                debugLog('检查choices路径...');
-                const content = response.choices[0].message.content;
-                if (typeof content === 'string') {
-                    debugLog('内容类型为字符串，长度:', content.length);
-                    const urlMatch = content.match(/https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp)/i);
-                    if (urlMatch) {
-                        debugLog('找到URL匹配:', urlMatch[0]);
-                        return urlMatch[0];
-                    }
-                    const b64Match = content.match(/data:image\/[a-z]+;base64,[A-Za-z0-9+/=]+/);
-                    if (b64Match) {
-                        debugLog('找到base64匹配，长度:', b64Match[0].length);
-                        return b64Match[0];
-                    }
-                }
+
+            if (!response) {
+                debugLog('响应为空');
+                return null;
             }
-            
-            // 检查Google AI Studio格式 (candidates -> content -> parts -> inlineData)
-            if (response.candidates && response.candidates[0] && response.candidates[0].content && response.candidates[0].content.parts) {
-                debugLog('检查candidates路径...');
-                const parts = response.candidates[0].content.parts;
-                debugLog('parts数量:', parts.length);
-                for (let i = 0; i < parts.length; i++) {
-                    debugLog('检查part', i, ':', parts[i]);
-                    if (parts[i].inlineData) {
-                        debugLog('找到inlineData:', parts[i].inlineData);
-                        return 'data:' + parts[i].inlineData.mimeType + ';base64,' + parts[i].inlineData.data;
-                    }
-                    if (parts[i].text) {
-                        const text = parts[i].text;
-                        debugLog('part文本长度:', text.length);
-                        const urlMatch = text.match(/https?:\/\/[^\s]+\.(?:png|jpg|jpeg|gif|webp)/i);
-                        if (urlMatch) {
-                            debugLog('找到URL匹配:', urlMatch[0]);
-                            return urlMatch[0];
-                        }
-                    }
+
+            const candidates = collectImageCandidates(response, []);
+            const serialized = JSON.stringify(response);
+            const escapedUrlMatches = serialized.match(/https?:\\?\/\\?\/[^"'\\\s]+/g) || [];
+            const dataMatches = serialized.match(/data:image\/[a-zA-Z0-9.+-]+;base64,[A-Za-z0-9+/=]+/g) || [];
+            const allMatches = candidates
+                .concat(escapedUrlMatches.map(function(url) { return url.replace(/\\\//g, '/'); }))
+                .concat(dataMatches);
+
+            for (let i = 0; i < allMatches.length; i++) {
+                const candidate = allMatches[i];
+                if (isLikelyImageResult(candidate)) {
+                    debugLog('找到图像结果:', candidate);
+                    return candidate;
                 }
             }
 
-            // 检查OpenAI内容数组格式
-            if (response.choices && response.choices[0] && response.choices[0].message && Array.isArray(response.choices[0].message.content)) {
-                const contentParts = response.choices[0].message.content;
-                for (let i = 0; i < contentParts.length; i++) {
-                    const part = contentParts[i];
-                    if (!part) continue;
-                    if (part.image_url && part.image_url.url) return part.image_url.url;
-                    if (part.type === 'image_url' && part.url) return part.url;
-                    if (part.b64_json) return 'data:image/png;base64,' + part.b64_json;
-                }
-            }
-
-            // 检查GRS绘图格式 (data -> results/url)
-            if (response.data && typeof response.data === 'object') {
-                if (Array.isArray(response.data.results) && response.data.results[0] && response.data.results[0].url) {
-                    debugLog('检查data.results[0].url路径...');
-                    return response.data.results[0].url;
-                }
-                if (response.data.url) {
-                    debugLog('检查data.url路径...');
-                    return response.data.url;
-                }
-            }
-
-            // 检查GRS绘图格式 (results/url)
-            if (Array.isArray(response.results) && response.results[0] && response.results[0].url) {
-                debugLog('检查results[0].url路径...');
-                return response.results[0].url;
-            }
-            if (response.url) {
-                debugLog('检查url路径...');
-                return response.url;
-            }
-            
-            // 检查DALL-E格式 (data -> url)
-            if (response.data && response.data[0] && response.data[0].url) {
-                debugLog('检查data.url路径...');
-                return response.data[0].url;
-            }
-            
-            // 检查DALL-E格式 (data -> b64_json)
-            if (response.data && response.data[0] && response.data[0].b64_json) {
-                debugLog('检查data.b64_json路径...');
-                return 'data:image/png;base64,' + response.data[0].b64_json;
-            }
-            
-            // 检查其他可能的格式
-            if (response.images && response.images[0]) {
-                debugLog('检查images路径...');
-                const image = response.images[0];
-                if (image.url) {
-                    debugLog('找到images.url:', image.url);
-                    return image.url;
-                }
-                if (image.b64_json) {
-                    debugLog('找到images.b64_json');
-                    return 'data:image/png;base64,' + image.b64_json;
-                }
-            }
-            
-            // 检查零柒API可能的响应格式
-            if (response.result && response.result.image) {
-                debugLog('检查result.image路径...');
-                return response.result.image;
-            }
-            
-            // 尝试从整个响应中提取
-            debugLog('尝试从整个响应中提取...');
-            const jsonStr = JSON.stringify(response);
-            const urlMatch = jsonStr.match(/https?:\/\/[^\s"]+\.(?:png|jpg|jpeg|gif|webp)/i);
-            if (urlMatch) {
-                debugLog('找到URL匹配:', urlMatch[0]);
-                return urlMatch[0];
-            }
-            const b64Match = jsonStr.match(/data:image\/[a-z]+;base64,[A-Za-z0-9+/=]+/);
-            if (b64Match) {
-                debugLog('找到base64匹配，长度:', b64Match[0].length);
-                return b64Match[0];
-            }
-            
             debugLog('未找到图像URL');
         } catch (e) {
             console.error('提取图像失败:', e);
         }
-        
+
         return null;
     }
+
     
     function base64ToArrayBuffer(base64) {
         const binaryString = atob(base64);
