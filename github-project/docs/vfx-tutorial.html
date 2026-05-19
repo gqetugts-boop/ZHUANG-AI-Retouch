@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VFX 特效工作台使用教程 — ZHUANG-AI 修图插件</title>
+  <style>
+    :root {
+      --bg: #080b10;
+      --card: #151b26;
+      --soft: #1a2230;
+      --text: #eef4ff;
+      --muted: rgba(238,244,255,.62);
+      --accent: #4d9eff;
+      --accent2: #7c5cff;
+      --line: rgba(120,160,220,.18);
+      --danger: #ff6b7a;
+      --ok: #64d98a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: radial-gradient(circle at 20% 0%, rgba(77,158,255,.14), transparent 34%), var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+    .wrap { max-width: 980px; margin: 0 auto; }
+    .hero, .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(26,34,48,.96), rgba(18,24,34,.96));
+      box-shadow: 0 12px 36px rgba(0,0,0,.28);
+    }
+    .hero { padding: 28px; margin-bottom: 18px; }
+    .card { padding: 22px; margin: 16px 0; }
+    h1, h2, h3 { margin: 0 0 12px; line-height: 1.25; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 22px; border-left: 4px solid var(--accent); padding-left: 10px; }
+    h3 { font-size: 18px; color: var(--accent); }
+    p { margin: 8px 0; color: var(--muted); }
+    ol, ul { margin: 8px 0 0; padding-left: 24px; }
+    li { margin: 8px 0; }
+    code {
+      padding: 2px 6px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #090d13;
+      color: #cfe5ff;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: 1px solid rgba(77,158,255,.32);
+      border-radius: 999px;
+      color: var(--accent);
+      background: rgba(77,158,255,.10);
+      font-weight: 800;
+    }
+    .badge2 {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 5px 10px;
+      border: 1px solid rgba(124,92,255,.32);
+      border-radius: 999px;
+      color: var(--accent2);
+      background: rgba(124,92,255,.10);
+      font-weight: 800;
+    }
+    .step {
+      padding: 14px;
+      margin: 10px 0;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(9,13,19,.55);
+    }
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .step-title {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text);
+      margin: 0;
+    }
+    .warn { color: var(--danger); font-weight: 800; }
+    .ok { color: var(--ok); font-weight: 800; }
+    .note { color: var(--accent); font-size: 14px; font-weight: 800; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+    .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .small { font-size: 14px; }
+    .toc { padding: 0; margin: 0 0 18px; list-style: none; }
+    .toc li { margin: 4px 0; }
+    .toc a { color: var(--accent); text-decoration: none; font-weight: 800; }
+    .toc a:hover { text-decoration: underline; }
+    .color-demo {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      vertical-align: middle;
+      margin-right: 4px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .separator {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 24px 0;
+    }
+    .combo-item {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(9,13,19,.55);
+    }
+    .combo-item strong { color: var(--accent); }
+    .combo-item em { color: var(--accent2); font-style: normal; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>VFX 特效工作台使用教程</h1>
+      <p>这份教程专门讲解 VFX 特效工作台：从它是什么、为什么用它，到一步一步怎么操作，以及每个控件分别控制什么。适合已经装好 ZHUANG-AI 插件、想用好 VFX 功能的人。</p>
+      <div class="badge">ZHUANG-AI 修图插件 · VFX 模块</div>
+      <div class="badge2">v1.4.1+</div>
+    </div>
+
+    <div class="card">
+      <h2>目录</h2>
+      <ol class="toc">
+        <li><a href="#what">VFX 是什么</a></li>
+        <li><a href="#why">为什么用 VFX 而不是普通提示词</a></li>
+        <li><a href="#workflow">标准工作流程</a></li>
+        <li><a href="#color">颜色怎么调（色相 / 饱和度 / 明度）</a></li>
+        <li><a href="#ui">当前界面每块怎么用</a></li>
+        <li><a href="#trajectory">什么时候用轨迹图</a></li>
+        <li><a href="#presets">预设怎么保存和加载</a></li>
+        <li><a href="#combos">常见效果搭配推荐</a></li>
+        <li><a href="#traps">避坑提示</a></li>
+      </ol>
+    </div>
+
+    <div class="card" id="what">
+      <h2>一、VFX 是什么</h2>
+      <p>VFX（Visual Effects）是在原图主体不被大幅改变的前提下，在人物或物体外侧叠加电影级的能量、霓虹、魔法、故障、光带等视觉特效。</p>
+      <p>它的本质是"<strong>给已有画面加一层特效层</strong>"，不是重画人物，也不是把整张图换风格。</p>
+      <p class="ok">适合做：人像海报、游戏感包装、动作拖尾、法阵、电流武器、能量光带、赛博故障感等。</p>
+    </div>
+
+    <div class="card" id="why">
+      <h2>二、为什么用 VFX 而不是普通提示词</h2>
+      <div class="step">
+        <h3>普通提示词的问题</h3>
+        <p>直接用文字生成特效时，AI 容易把人物本身也一起改掉——脸变形、服装变了、肤色变了、构图也变了。要么出图结果和原图风格割裂，要么需要大量重抽。</p>
+      </div>
+      <div class="step">
+        <h3>VFX 工作台怎么解决</h3>
+        <p>VFX 工作台的核心逻辑是"<strong>保留主体 + 只增强特效</strong>"：</p>
+        <ul>
+          <li>有参考图系统：给 AI 提供风格、材质、脸部细节的参照，而不是让它自己猜。</li>
+          <li>有轨迹描述和轨迹图：让特效的运动方向是可控的，不会乱飘。</li>
+          <li>有结构化的外观参数：特效类型、材质质感、颜色、粒子、烟雾分开控制，不会互相污染。</li>
+          <li>内部有 VFX 专用提示词模板：会自动告诉 AI"不要改变人脸、不要改服装、不要改构图"，而不是每次都要你手动写。</li>
+        </ul>
+      </div>
+      <p class="note">简单说：VFX 把"特效怎么走""特效什么质感""特效什么颜色"拆开了，你不需要每次都重新描述"保留人脸不要动"这句话。</p>
+    </div>
+
+    <div class="card" id="workflow">
+      <h2>三、标准工作流程</h2>
+      <hr class="separator">
+      <div class="step">
+        <div class="step-header">
+          <div class="step-num">1</div>
+          <h3 class="step-title">准备主选区和参考图</h3>
+        </div>
+        <ol>
+          <li>在 Photoshop 里用选框工具框住要加特效的主体区域。</li>
+          <li>回到插件，在 VFX 工作台的 <code>参考与轨迹</code> 区点 <code>添加当前选区为参考图</code>。</li>
+          <li>如果有风格参考、材质参考或局部脸部参考，再逐张加进来（最多 4 张）。参考图只负责告诉 AI 风格/材质方向，不会替换主选区。</li>
+        </ol>
+        <p class="ok">参考图是可选的，但有参考图时出图质量会明显更稳定。</p>
+      </div>
+      <div class="step">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <h3 class="step-title">设置轨迹</h3>
+        </div>
+        <ol>
+          <li>在 <code>轨迹描述</code> 里写大方向，如"绕身体一圈后向右上方拉出"、"从手里爆开"等。</li>
+          <li>如果运动路径复杂（折返、螺旋、多个部位穿插），点 <code>创建轨迹引导层</code>，自己用画笔画一条红色路径，再点 <code>读取轨迹图</code>。</li>
+          <li>简单的上下左右绕一圈，用文字描述就够了，不需要轨迹图。</li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-header">
+          <div class="step-num">3</div>
+          <h3 class="step-title">调外观参数</h3>
+        </div>
+        <ol>
+          <li><strong>特效类型</strong>：选一个预设大类，或者自己写自定义名称。</li>
+          <li><strong>材质质感</strong>：选等离子（最常用）、玻璃、电流、液态火焰或尘雾。</li>
+          <li><strong>主色</strong>：先吸取画面主色，再用下面的饱和度和明度微调。</li>
+          <li><strong>粒子</strong>（可选）：补充特效的细节层次，如"细碎火星向外飞散，尾部带发光颗粒"。</li>
+          <li><strong>烟雾</strong>（可选）：适合加强体积感，但不要一开始就开太重。</li>
+        </ol>
+      </div>
+      <div class="step">
+        <div class="step-header">
+          <div class="step-num">4</div>
+          <h3 class="step-title">生成</h3>
+        </div>
+        <ol>
+          <li>先点 <code>生成 VFX 提示词</code>，把配置合成一条英文提示词填入生图提示词框，你可以在里面检查方向是否正确。</li>
+          <li>确认没问题后，点 <code>直接生成 VFX</code>，插件会把当前 VFX 配置和参考图一起发给 GRS 图生图接口，然后把图放回 Photoshop。</li>
+        </ol>
+        <p class="warn">如果点"直接生成 VFX"后效果不理想，可以先调参数再生成一次，不要直接删图——很多细节调颜色和饱和度就能改善很多。</p>
+      </div>
+    </div>
+
+    <div class="card" id="color">
+      <h2>四、颜色怎么调</h2>
+      <p>VFX 的颜色控制有三个维度：</p>
+      <div class="grid3">
+        <div class="step">
+          <h3>色相</h3>
+          <p>拖动色相条决定颜色类别。</p>
+          <p>青色：科技感/冷调 · 蓝色：能量/夜空 · 紫色：魔法/神秘 · 红色：火焰/危险</p>
+        </div>
+        <div class="step">
+          <h3>饱和度</h3>
+          <p>饱和度越高，颜色越"炸"越纯；越低越克制、偏灰、偏高级。</p>
+          <p class="ok">如果色相选好了但效果还是假，先把饱和度降低到 50–70%，通常会更自然。</p>
+        </div>
+        <div class="step">
+          <h3>明度</h3>
+          <p>明度越高，特效越亮越通透；越低越压暗，越适合夜景、故障感、能量残影。</p>
+          <p class="ok">在人像脸部附近建议用中高明度（70% 以上），低明度特效容易和肤色打架。</p>
+        </div>
+      </div>
+      <hr class="separator">
+      <div class="step">
+        <h3>快速配色技巧</h3>
+        <ol>
+          <li>在 Photoshop 里框选画面中已有的主色调区域。</li>
+          <li>点 VFX 区的 <code>吸取画面主色</code>，插件会自动读取当前 Photoshop 前景色。</li>
+          <li>再根据刚才的规则，用饱和度和明度做微调。</li>
+        </ol>
+        <p class="ok">这样取出来的颜色和画面天然协调，不需要自己猜颜色值。</p>
+      </div>
+    </div>
+
+    <div class="card" id="ui">
+      <h2>五、当前界面每块怎么用</h2>
+      <div class="step">
+        <h3>应用中心 → VFX 特效</h3>
+        <p>从这里进入 VFX 工作台。点进去后，你会看到三个操作区：<code>参考与轨迹</code>、<code>外观参数</code>、<code>生成与预设</code>。</p>
+      </div>
+      <div class="step">
+        <h3>参考与轨迹</h3>
+        <ul>
+          <li><strong>参考图镜像</strong>：最多放 4 张，给 AI 补风格、材质、脸部细节。点某张参考图可以重新用当前选区替换它。</li>
+          <li><strong>添加当前选区为参考图</strong>：把 Photoshop 当前选区截一张图加进去。</li>
+          <li><strong>轨迹描述</strong>：用文字写运动大方向，如"绕一圈""向右上拉出""从手心爆开"。</li>
+          <li><strong>创建轨迹引导层</strong>：在 Photoshop 里新建一个空白图层供你画路径。</li>
+          <li><strong>读取轨迹图 / 清除轨迹图</strong>：抓取当前画的红色轨迹，或清空重来。</li>
+        </ul>
+      </div>
+      <div class="step">
+        <h3>外观参数</h3>
+        <ul>
+          <li><strong>特效类型</strong>（伪下拉）：选大类，也可以选"自定义"自己写英文名称。</li>
+          <li><strong>材质质感</strong>（伪下拉）：决定发光质感，也可以自定义。</li>
+          <li><strong>特效主色</strong>：色相条 + 饱和度滑块 + 明度滑块 + Hex 输入框 + 吸取主色按钮。</li>
+          <li><strong>粒子描述</strong>：补充细节层次，留空会自动补英文默认粒子。</li>
+          <li><strong>启用烟雾效果</strong>：打勾后出现烟雾描述输入框；烟雾建议后加、不要一开始就开太重。</li>
+        </ul>
+      </div>
+      <div class="step">
+        <h3>生成与预设</h3>
+        <ul>
+          <li><strong>预设分组 / 预设选择</strong>（伪下拉）：选择已保存的配置。</li>
+          <li><strong>预设名称</strong>：给当前配置起个名字。</li>
+          <li><strong>保存预设 / 删除预设</strong>：保存后整套 VFX 配置（含颜色、粒子、烟雾）都会记录，下次直接从下拉里选回同款。</li>
+          <li><strong>生成 VFX 提示词</strong>：把配置合成英文提示词填入生图框，方便你检查方向。</li>
+          <li><strong>直接生成 VFX</strong>：发送到 GRS 图生图，然后图回写 Photoshop。</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card" id="trajectory">
+      <h2>六、什么时候用轨迹图</h2>
+      <div class="step">
+        <h3>只需要文字轨迹的情况</h3>
+        <p>"绕一圈""向上拉出""从手里爆开""螺旋上升""横向扫过"——这类简单的方向描述，文字就够了，不需要轨迹图。</p>
+      </div>
+      <div class="step">
+        <h3>需要轨迹图的情况</h3>
+        <ul>
+          <li>特效要穿过身体的多个部位（绕过头→穿过手臂→绕到身后）。</li>
+          <li>运动路径有折返、U 形弯、锐角转折。</li>
+          <li>想把特效限制在某个特定形状内（比如沿着一个字形走）。</li>
+          <li>AI 生成的运动方向一直乱飘，不按你预期走。</li>
+        </ul>
+      </div>
+      <div class="step">
+        <h3>如何画轨迹图</h3>
+        <ol>
+          <li>点 <code>创建轨迹引导层</code>，Photoshop 里会新建一个空白图层。</li>
+          <li>把前景色调成红色（255,0,0 附近），用画笔在这个图层上画你想要的运动路径。</li>
+          <li>画完后回到插件，点 <code>读取轨迹图</code>。</li>
+          <li>确认 VFX 工作台里的轨迹预览已更新，再继续后面的参数设置。</li>
+        </ol>
+        <p class="ok">不需要画得很细，AI 主要是读路径的方向和大致形状。</p>
+      </div>
+    </div>
+
+    <div class="card" id="presets">
+      <h2>七、预设怎么保存和加载</h2>
+      <div class="step">
+        <h3>保存预设</h3>
+        <ol>
+          <li>调好特效类型、材质、主色（含饱和度和明度）、粒子、烟雾等全部参数。</li>
+          <li>在 <code>预设名称</code> 里输入一个容易记的名字。</li>
+          <li>点 <code>保存预设</code>。</li>
+          <li>预设会自动归入 <code>VFX特效</code> 分组，下次直接从伪下拉的预设选择里找到它。</li>
+        </ol>
+        <p class="ok">保存预设时会同步保存当时的参考图配置，下次加载预设后参考图会一并恢复。</p>
+      </div>
+      <div class="step">
+        <h3>加载预设</h3>
+        <ol>
+          <li>在 <code>预设分组</code> 里选 <code>VFX特效</code>。</li>
+          <li>在 <code>预设选择</code> 里选你要的预设名。</li>
+          <li>所有参数会一次性回填到工作台，包括颜色、粒子和烟雾设置。</li>
+          <li>按需要微调后即可生成。</li>
+        </ol>
+      </div>
+      <div class="step">
+        <h3>删除预设</h3>
+        <p>选好预设后点 <code>删除预设</code> 即可移除。如果误删，只能重新保存，不能恢复。</p>
+      </div>
+    </div>
+
+    <div class="card" id="combos">
+      <h2>八、常见效果搭配推荐</h2>
+      <div class="grid3">
+        <div class="combo-item">
+          <strong>能量拖尾 + 等离子光感</strong>
+          <p>适合动作人物、运动瞬间、冲刺感。建议饱和度 60–80%，明度 80–100%。</p>
+        </div>
+        <div class="combo-item">
+          <strong>霓虹描边 + 玻璃质光感</strong>
+          <p>适合潮流海报、科技边缘光、赛博角色。饱和度偏高，明度偏高。</p>
+        </div>
+        <div class="combo-item">
+          <strong>故障碎片 + 电流粒子</strong>
+          <p>适合赛博、电子屏破裂、数码干扰感。建议明度偏低（50–70%），饱和度中。</p>
+        </div>
+        <div class="combo-item">
+          <strong>魔法阵 + 尘雾光环</strong>
+          <p>适合法术、召唤、悬浮类画面。主色选紫或金，饱和度中高，明度中高。</p>
+        </div>
+        <div class="combo-item">
+          <strong>光带丝带 + 玻璃质光感</strong>
+          <p>适合舞蹈、飘带、丝带类效果。饱和度偏低更自然，明度高更通透。</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="traps">
+      <h2>九、避坑提示</h2>
+      <div class="step">
+        <h3>烟雾不要一上来就开太重</h3>
+        <p>烟雾会吃掉特效的边缘轮廓，尤其是和人像脸部重叠时会让边缘脏。一开始可以用 0，等特效主体出图满意后再慢慢加。</p>
+      </div>
+      <div class="step">
+        <h3>颜色太亮又太饱和会显假</h3>
+        <p>人像脸部附近的高饱和度 + 高明度特效，容易显得像贴纸。建议在人像上用偏低饱和度（50–70%）或偏低明度（60–80%）。</p>
+      </div>
+      <div class="step">
+        <h3>主体被改坏了怎么办</h3>
+        <p>通常原因是：参考图不够明确，或轨迹/粒子写得太夸张。先把粒子和烟雾归零、饱和度降低，再生成一次。如果还是有主体变化，检查主选区有没有框得太小、边缘被切掉了。</p>
+      </div>
+      <div class="step">
+        <h3>AI 出的特效方向不对</h3>
+        <p>把轨迹描述写得更具体（加方向词：左/右、上/下、顺/逆时针），或者直接画轨迹图让 AI 照着走。</p>
+      </div>
+      <div class="step">
+        <h3>出图后特效太薄或太厚</h3>
+        <p>在生图页调低/调高 <code>重绘幅度</code>（Denoising Strength）。太低特效不明显，太高容易动到主体本身。建议 0.30–0.45 之间。</p>
+      </div>
+    </div>
+
+    <div class="card small">
+      <h2>相关链接</h2>
+      <p>完整插件使用教程（包括安装、API 设置、生图、对话、WebUI）：<strong>查看 <code>tutorial.html</code></strong></p>
+      <p>插件交流群：<strong>1103212650</strong>（QQ 群，用于官网、教程和发布说明的支持入口）</p>
+      <p>插件完全免费，如果你从任何渠道付费获取，请立即举报商家。</p>
+    </div>
+  </div>
+</body>
+</html>

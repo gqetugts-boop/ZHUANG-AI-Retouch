@@ -1,0 +1,14 @@
+ZHUANG-AI 修图插件
+
+This product includes RunningHub integration logic inspired in part by the publicly shared implementation ideas of 小T (PixelRunner / 小T修图助手).
+
+Attribution retained in this project:
+- Referenced inspiration / integration approach: 小T
+- Current project author: 庄泽 / 零柒zero
+
+Scope of referenced ideas:
+- RunningHub app ID normalization
+- RunningHub app metadata parsing flow
+- RunningHub task submission and polling flow
+
+Please retain this notice when redistributing versions of this project that include the referenced integration approach.

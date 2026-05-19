@@ -139,17 +139,24 @@ button, select, .tab, .custom-select-trigger, .custom-select-option { cursor: po
 .app-header-actions { flex: 0 0 auto; }
 
 .icon-action-btn {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
     padding: 0;
-    border: 1px solid var(--border-soft);
+    border: 1px solid rgba(97, 174, 255, 0.24);
     border-radius: 12px;
-    background: var(--bg-card-soft);
-    color: var(--text-secondary);
-    font-size: 18px;
-    font-weight: 800;
+    background: linear-gradient(180deg, rgba(24, 32, 45, 0.98), rgba(18, 24, 35, 0.96));
+    color: #eef4ff;
+    font-size: 16px;
+    font-weight: 900;
     line-height: 1;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+.icon-action-btn:hover {
+    border-color: rgba(126, 196, 255, 0.38);
+    background: linear-gradient(180deg, rgba(34, 45, 63, 0.98), rgba(24, 32, 45, 0.98));
+    transform: translateY(-1px);
 }
 
 #status.status {
@@ -421,18 +428,22 @@ select,
     text-align: left;
 }
 
-textarea,
-.prompt-textarea {
-    display: block;
-    min-height: 112px;
-    padding: 10px 12px;
-    line-height: 1.45;
-    resize: vertical;
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    overflow-x: hidden;
-    overflow-y: auto;
+#apps select,
+#vfxTutorial select {
+    padding-right: 40px;
+    border-color: rgba(77, 158, 255, 0.22) !important;
+    background-color: #0b1017 !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' fill='none' stroke='%23dce7ff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 12px 8px;
+    color: #eef4ff !important;
+}
+
+#apps select option,
+#vfxTutorial select option {
+    background: #111720;
+    color: #eef4ff;
 }
 
 input:focus,
@@ -809,6 +820,10 @@ textarea::placeholder {
     min-width: 0;
 }
 
+.custom-select.open {
+    z-index: 60;
+}
+
 .native-select-hidden {
     position: absolute !important;
     left: 0 !important;
@@ -833,7 +848,7 @@ textarea::placeholder {
     gap: 8px;
     cursor: pointer;
     text-align: left;
-    user-select: none;
+    user-select: text;
 }
 
 .custom-select-trigger::after {
@@ -867,6 +882,63 @@ textarea::placeholder {
     isolation: isolate;
 }
 
+.custom-select-panel[data-inline="true"] {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-height: 260px !important;
+    margin-top: 6px;
+    z-index: 80 !important;
+}
+
+.custom-select-panel[data-select-for="promptPreset"],
+.custom-select-panel[data-select-for="presetCategory"] {
+    position: static !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    min-width: 100%;
+    width: 100% !important;
+    max-height: 260px !important;
+    margin-top: 6px;
+    z-index: 80 !important;
+}
+
+.form-group.select-open-host,
+.img2img-inline-cell.select-open-host,
+.parameter-item.select-open-host {
+    position: relative;
+    z-index: 40;
+    overflow: visible;
+}
+
+.preset-dropdown-open .preset-dropdown-sensitive,
+.any-dropdown-open .dropdown-hide-while-open {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.preset-dropdown-open .preset-dropdown-sensitive textarea,
+.preset-dropdown-open .preset-dropdown-sensitive input,
+.preset-dropdown-open .preset-dropdown-sensitive .preset-actions,
+.any-dropdown-open .dropdown-hide-while-open textarea,
+.any-dropdown-open .dropdown-hide-while-open input,
+.any-dropdown-open .dropdown-hide-while-open .preset-actions {
+    position: relative;
+    z-index: 1;
+}
+
+.preset-dropdown-open #img2img .img2img-inline-row:first-of-type,
+.preset-dropdown-open #img2img .img2img-inline-row:first-of-type .img2img-inline-cell,
+.preset-dropdown-open #img2img .img2img-inline-row:first-of-type .custom-select,
+.preset-dropdown-open #img2img .img2img-inline-row:first-of-type .custom-select-panel {
+    position: relative;
+    z-index: 120;
+}
+
 .custom-select-panel.open {
     display: block !important;
     pointer-events: auto !important;
@@ -880,7 +952,7 @@ textarea::placeholder {
     font-size: calc(12px * var(--ui-scale));
     line-height: 1.35;
     cursor: pointer;
-    user-select: none;
+    user-select: text;
     white-space: normal;
     word-break: break-word;
 }
@@ -900,28 +972,701 @@ textarea::placeholder {
     background: transparent;
 }
 
-.custom-select-backdrop.open {
+.standard-prompt-preset-fields.vfx-mode-hidden {
+    display: none;
+}
+
+.vfx-pseudo-color-control {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.vfx-color-picker-stack {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid rgba(77, 158, 255, 0.20);
+    border-radius: 16px;
+    background:
+        radial-gradient(circle at 14% 18%, rgba(0, 240, 255, 0.18), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(124, 92, 255, 0.18), transparent 32%),
+        linear-gradient(180deg, rgba(11, 16, 24, 0.96), rgba(8, 12, 18, 0.90));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 24px rgba(0,0,0,0.20);
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.vfx-color-preview-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+}
+
+.vfx-color-preview-box {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 15px;
+    background: #00f0ff;
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.12),
+        0 0 0 1px rgba(0, 240, 255, 0.20),
+        0 8px 18px rgba(0,0,0,0.26),
+        0 0 18px rgba(0, 240, 255, 0.22);
+}
+
+.vfx-color-preview-box::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.24), rgba(255,255,255,0.02));
+    pointer-events: none;
+}
+
+.vfx-hue-strip {
+    position: relative;
+    width: 100%;
+    height: 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(120, 160, 220, 0.24);
+    background: linear-gradient(90deg, #ff2b2b, #ffb52b, #d8ff2b, #2bff8f, #2be7ff, #2b5bff, #9c2bff, #ff2bc2, #ff2b2b);
+    box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.06),
+        0 0 0 1px rgba(0,0,0,0.14),
+        0 6px 14px rgba(0,0,0,0.18);
+    cursor: pointer;
+}
+
+.vfx-hue-thumb {
+    position: absolute;
+    top: 50%;
+    width: 16px;
+    height: 16px;
+    margin-left: -8px;
+    margin-top: -8px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid rgba(10, 16, 24, 0.92);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.30), 0 0 0 2px rgba(255,255,255,0.16);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.vfx-color-text {
+    display: block;
+    flex: 1 1 auto;
+    width: auto !important;
+    min-width: 120px;
+    max-width: none;
+    height: 46px;
+    min-height: 46px;
+    padding: 0 14px;
+    border: 1px solid rgba(120, 160, 220, 0.22);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(9, 13, 19, 0.90), rgba(12, 17, 25, 0.86));
+    color: #eef4ff;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.vfx-color-text:focus {
+    outline: none;
+    border-color: rgba(77, 158, 255, 0.52);
+    background: linear-gradient(180deg, rgba(10, 15, 23, 0.96), rgba(12, 18, 27, 0.92));
+    box-shadow: 0 0 0 1px rgba(77, 158, 255, 0.18), 0 0 16px rgba(77, 158, 255, 0.12);
+}
+
+.vfx-slider-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: rgba(238, 244, 255, 0.86);
+    font-size: calc(11px * var(--ui-scale));
+    font-weight: 800;
+}
+
+.vfx-slider-meta span:last-child {
+    color: rgba(207, 229, 255, 0.88);
+    font-size: calc(10px * var(--ui-scale));
+}
+
+.vfx-pseudo-slider {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+    cursor: pointer;
+}
+
+.vfx-pseudo-slider:focus {
+    outline: none;
+    box-shadow: 0 0 0 1px rgba(77, 158, 255, 0.24), 0 0 18px rgba(77, 158, 255, 0.14), inset 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+.vfx-pseudo-slider-track {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 50%;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(255,255,255,0.16), rgba(255,255,255,0.34));
+}
+
+.vfx-pseudo-slider-fill {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(0, 240, 255, 0.64), rgba(124, 92, 255, 0.82));
+    min-width: 0;
+}
+
+.vfx-pseudo-slider-thumb {
+    position: absolute;
+    top: 50%;
+    width: 20px;
+    height: 20px;
+    margin-left: -10px;
+    margin-top: -10px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.38), rgba(255,255,255,0.12));
+    border: 1px solid rgba(255,255,255,0.24);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.26);
+    pointer-events: none;
+}
+
+.vfx-pseudo-slider-thumb::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 999px;
+    background: rgba(9, 13, 19, 0.82);
+}
+
+.app-launch-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 14px;
+    width: 100%;
+    min-height: 96px;
+    padding: 18px 20px;
+    border: 1px solid rgba(96, 176, 255, 0.18);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(18, 24, 35, 0.96), rgba(14, 19, 28, 0.94));
+    box-shadow: 0 10px 24px rgba(8, 12, 19, 0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+    text-align: left;
+    cursor: pointer;
+}
+
+.app-launch-card:hover {
+    border-color: rgba(122, 196, 255, 0.34);
+    background: linear-gradient(180deg, rgba(24, 32, 46, 0.98), rgba(17, 23, 33, 0.96));
+    box-shadow: 0 12px 28px rgba(10, 15, 24, 0.22);
+    transform: translateY(-1px);
+}
+
+.vfx-workflow-hero .btn,
+.vfx-step-actions .btn,
+.vfx-generate-actions .btn {
+    min-height: 40px;
+    border-radius: 10px;
+    border-color: rgba(97, 174, 255, 0.20);
+    background: linear-gradient(180deg, rgba(28, 37, 53, 0.96), rgba(21, 28, 40, 0.96));
+    color: #eef4ff;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+.vfx-workflow-hero .btn:hover:not(:disabled),
+.vfx-step-actions .btn:hover:not(:disabled),
+.vfx-generate-actions .btn:hover:not(:disabled) {
+    border-color: rgba(126, 196, 255, 0.32);
+    background: linear-gradient(180deg, rgba(38, 50, 70, 0.98), rgba(26, 35, 49, 0.98));
+    color: #ffffff;
+}
+
+.vfx-step-actions .btn,
+.vfx-workflow-hero .btn-secondary {
+    color: rgba(238, 244, 255, 0.84);
+}
+
+.vfx-generate-actions .btn-primary,
+.vfx-generate-actions .btn-success,
+.vfx-workflow-hero .btn-primary {
+    border-color: rgba(117, 188, 255, 0.34);
+    background: linear-gradient(135deg, rgba(77, 158, 255, 0.82), rgba(124, 92, 255, 0.78));
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(77, 158, 255, 0.16);
+}
+
+.vfx-generate-actions .btn-primary:hover:not(:disabled),
+.vfx-generate-actions .btn-success:hover:not(:disabled),
+.vfx-workflow-hero .btn-primary:hover:not(:disabled) {
+    border-color: rgba(144, 206, 255, 0.42);
+    background: linear-gradient(135deg, rgba(92, 173, 255, 0.92), rgba(136, 104, 255, 0.88));
+}
+
+.app-launch-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 16px;
+    border: 1px solid rgba(77, 158, 255, 0.24);
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(124, 92, 255, 0.18));
+    color: #eef4ff;
+    font-size: 24px;
+    font-weight: 900;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 20px rgba(0,0,0,0.18);
+    flex: 0 0 auto;
+}
+
+.app-launch-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.app-launch-title {
+    color: var(--text-main);
+    font-size: calc(16px * var(--ui-scale));
+    font-weight: 900;
+    line-height: 1.3;
+}
+
+.app-launch-desc {
+    color: var(--text-secondary);
+    font-size: calc(12px * var(--ui-scale));
+    line-height: 1.6;
+}
+
+.vfx-app-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.vfx-workflow-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.vfx-workflow-summary {
+    max-width: 620px;
+}
+
+.vfx-workflow-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.vfx-workflow-step-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(120, 160, 220, 0.18);
+    background: rgba(18, 24, 35, 0.78);
+    color: var(--text-secondary);
+    font-size: calc(11px * var(--ui-scale));
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.vfx-workflow-step-chip strong {
+    color: var(--text-main);
+    font-size: calc(10px * var(--ui-scale));
+    letter-spacing: 0.08em;
+}
+
+.vfx-step-card {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.vfx-step-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.vfx-step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.18), rgba(124, 92, 255, 0.18));
+    border: 1px solid rgba(77, 158, 255, 0.22);
+    color: var(--text-main);
+    font-size: calc(12px * var(--ui-scale));
+    font-weight: 900;
+}
+
+.vfx-step-title-block {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.vfx-step-desc {
+    color: var(--text-secondary);
+    font-size: calc(12px * var(--ui-scale));
+    line-height: 1.6;
+    max-width: 520px;
+}
+
+.vfx-step-inline-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.vfx-step-inline-grid > * {
+    min-width: 0;
+}
+
+.vfx-color-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 320px);
+    gap: 12px;
+    align-items: start;
+}
+
+.vfx-appearance-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.vfx-appearance-form .form-group.settings-card {
+    margin: 0;
+}
+
+.vfx-appearance-form > .form-group.settings-card {
     display: block !important;
+    width: 100%;
 }
 
-.control-mirror-layer,
-.control-mirror {
-    display: none !important;
+.vfx-appearance-row {
+    display: block;
+    width: 100%;
 }
 
-.native-control-overlay-hidden {
+.vfx-appearance-row > * + * {
+    margin-top: 12px;
+}
+
+.vfx-compact-card {
+    gap: 10px;
+}
+
+.vfx-compact-card .form-group.settings-card {
+    margin: 0;
+    display: block;
+    width: 100%;
+}
+
+.vfx-compact-card .btn-row {
+    flex-wrap: wrap;
+}
+
+.vfx-compact-card .btn-row > * {
+    flex: 1 1 140px;
+}
+
+.vfx-note-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(120, 160, 220, 0.16);
+    background: rgba(20, 27, 39, 0.88);
+    color: var(--text-secondary);
+    font-size: calc(11px * var(--ui-scale));
+    line-height: 1.45;
+}
+
+.vfx-trajectory-preview-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.vfx-step-actions .btn,
+.vfx-trajectory-actions .btn,
+.vfx-generate-actions .btn {
+    flex: 1 1 180px;
+}
+
+.vfx-reference-card .reference-panel {
+    margin-top: 0;
+}
+
+.vfx-reference-card .reference-slot,
+.vfx-trajectory-slot .reference-slot {
+    width: 120px;
+    min-width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+}
+
+.vfx-reference-card .reference-slot.empty,
+.vfx-trajectory-slot .reference-slot.empty {
+    width: 120px;
+    min-width: 120px;
+    height: 120px;
+    flex: 0 0 120px;
+    padding: 10px;
+    text-align: center;
+    line-height: 1.4;
+}
+
+.vfx-reference-card .reference-slot img,
+.vfx-trajectory-slot .reference-slot img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vfx-trajectory-slot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 120px;
+}
+
+.vfx-trajectory-slot .reference-slot .info-text {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    margin: 0;
+    padding: 4px 6px;
+    border-radius: 8px;
+    background: rgba(9, 13, 19, 0.72);
+    color: rgba(238, 244, 255, 0.88);
+    font-size: calc(10px * var(--ui-scale));
+    text-align: center;
+}
+
+@media (max-width: 860px) {
+    .vfx-step-inline-grid,
+    .vfx-color-row,
+    .vfx-trajectory-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+.vfx-hidden-native {
+    position: absolute !important;
     opacity: 0 !important;
-    visibility: hidden !important;
+    pointer-events: none !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+}
+
+.vfx-builder-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 10px;
+    border: 1px solid rgba(77, 158, 255, 0.18);
+    border-radius: calc(var(--radius-lg) + 2px);
+    background: linear-gradient(180deg, rgba(17, 23, 32, 0.94), rgba(13, 17, 24, 0.92));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.vfx-builder-panel > .form-group {
+    margin: 0;
+    padding: 12px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: var(--radius-lg);
+    background: rgba(21, 27, 38, 0.94);
+    box-shadow: none;
+}
+
+.vfx-builder-panel > .form-group.img2img-inline-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-start;
+    overflow: visible;
+}
+
+.vfx-builder-panel > .form-group.img2img-inline-row > .img2img-inline-cell {
+    flex: 1 1 220px;
+    width: calc(50% - 6px);
+    min-width: 0;
+}
+
+.vfx-builder-panel > .btn-row {
+    margin: 0;
+}
+
+.vfx-builder-panel .img2img-inline-row {
+    align-items: flex-start;
+}
+
+.vfx-builder-panel .img2img-inline-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.vfx-builder-panel .img2img-inline-cell > .custom-select,
+.vfx-builder-panel .img2img-inline-cell > .vfx-pseudo-color-control {
+    width: 100%;
+}
+
+.vfx-builder-panel .img2img-inline-cell > label,
+.vfx-builder-panel .vfx-slider-group > label {
+    margin-bottom: 0;
+}
+
+.vfx-builder-toggle-row {
+    gap: 6px;
+    padding: 10px 12px;
+    border: 1px solid rgba(120, 160, 220, 0.13);
+    border-radius: var(--radius-lg);
+    background: rgba(13, 17, 24, 0.46);
+}
+
+.vfx-slider-group {
+    gap: 8px;
+}
+
+.vfx-slider-group label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.vfx-slider-group label span {
+    color: var(--text-main);
+    font-weight: 900;
+}
+
+.vfx-slider-group input[type="range"] {
+    width: 100%;
+}
+
+.checkbox-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+}
+
+.pseudo-checkbox-row {
+    cursor: pointer;
+    font-weight: 900;
+}
+
+.pseudo-checkbox-row input[type="checkbox"] {
+    position: absolute !important;
+    opacity: 0 !important;
     pointer-events: none !important;
 }
 
-html.global-dropdown-open input[type="text"],
-html.global-dropdown-open input[type="password"],
-html.global-dropdown-open input[type="number"],
-html.global-dropdown-open input[type="search"],
-html.global-dropdown-open input[type="url"],
-html.global-dropdown-open textarea,
-html.global-dropdown-open sp-textarea {
+.pseudo-choice-dot {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    border: 2px solid rgba(238, 244, 255, 0.44);
+    border-radius: 999px;
+    background: rgba(238, 244, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.28);
+}
+
+.pseudo-checkbox-on .pseudo-choice-dot {
+    border-color: rgba(77, 158, 255, 0.86);
+    background: rgba(77, 158, 255, 0.18);
+}
+
+.pseudo-checkbox-on .pseudo-choice-dot::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #eef4ff;
+    box-shadow: 0 0 10px rgba(77, 158, 255, 0.55);
+}
+
+#vfxColor {
+    width: 100%;
+    height: var(--control-h);
+    min-height: var(--control-h);
+    padding: 4px;
+    border: 1px solid rgba(120, 160, 220, 0.24);
+    border-radius: 10px;
+    background: #090d13;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+#vfxColor::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+#vfxColor::-webkit-color-swatch {
+    border: none;
+    border-radius: 7px;
+}
+
+
+.native-control-overlay-hidden {
     opacity: 0 !important;
     visibility: hidden !important;
     pointer-events: none !important;
@@ -968,11 +1713,36 @@ html.global-dropdown-open sp-textarea {
     margin-bottom: 7px;
 }
 
-#webui .webui-param-input {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+#webui .parameter-item .webui-slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#webui .parameter-item .webui-slider-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-height: 16px;
+    margin-bottom: 0;
+}
+
+#webui .parameter-item .webui-slider-value {
+    color: var(--text-main);
+    font-weight: 900;
+}
+
+#webui .parameter-item input[type="range"].webui-param-slider {
     width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    accent-color: var(--accent) !important;
+    background: transparent !important;
+}
+
+#webui .webui-param-input {
     height: 40px !important;
     min-height: 40px !important;
     padding: 0 10px !important;
@@ -1261,10 +2031,8 @@ html.global-dropdown-open sp-textarea {
                     <div class="brand-mark">Z</div>
                     <div class="brand-copy">
                         <div class="brand-title-row">
-                            <div class="section-title">ZHUANG-AI 修图插件</div>
-                            <div class="version-badge">1.3.8 正式版</div>
+                            <div class="section-title">ZHUANG-AI</div>
                         </div>
-                        <div class="brand-subtitle">NONLINEAR RETOUCH WORKSPACE</div>
                     </div>
                 </div>
                 <div class="app-header-actions">
@@ -1276,8 +2044,9 @@ html.global-dropdown-open sp-textarea {
 
             <div class="tabs">
                 <div class="tab active" data-tab="img2img">生图</div>
+                <div class="tab" data-tab="apps">应用</div>
                 <div class="tab" data-tab="chat">对话</div>
-                <div class="tab" data-tab="webui">WebUI</div>
+                <div class="tab" data-tab="webui" style="display: none;">WebUI</div>
                 <div class="tab" data-tab="batch" style="display: none;">批处理</div>
                 <div class="tab" data-tab="settings">设置</div>
                 <div class="tab" data-tab="logs">日志</div>
@@ -1289,14 +2058,16 @@ html.global-dropdown-open sp-textarea {
                         <div class="module-title">ZHUANG-AI 修图插件</div>
                         <div class="module-desc">AI retouch workspace for Photoshop</div>
                     </div>
-                    <div class="module-badge">1.3.8</div>
+                    <div class="module-badge">1.4.1</div>
                 </div>
+
+                <button id="btnCloseSplash" class="btn btn-primary splash-close-btn" type="button">进入插件</button>
 
                 <div class="module-card splash-meta-card">
                     <div class="card-title">插件信息</div>
                     <div class="splash-meta-grid">
                         <div class="splash-meta-item"><span>插件名</span><strong>ZHUANG-AI 修图插件</strong></div>
-                        <div class="splash-meta-item"><span>版本号</span><strong>1.3.8 正式版</strong></div>
+                        <div class="splash-meta-item"><span>版本号</span><strong>1.4.1 正式版</strong></div>
                         <div class="splash-meta-item"><span>作者</span><strong>庄泽 / 零柒zero</strong></div>
                         <div class="splash-meta-item"><span>项目主页</span><strong>https://www.syyyy.online</strong></div>
                         <div class="splash-meta-item"><span>交流群</span><strong>1103212650</strong></div>
@@ -1317,11 +2088,9 @@ html.global-dropdown-open sp-textarea {
                     <div class="card-title">作者与致谢</div>
                     <div class="notice-block">
                         <div class="notice-section compact-credit"><strong>作者</strong>庄泽 / 零柒zero</div>
-                        <div class="notice-section compact-credit"><strong>致谢</strong>提示词参考：夏三七 / 橙子Orange<br>图片对齐算法开源作者：草鱼</div>
+                        <div class="notice-section compact-credit"><strong>致谢</strong>提示词参考：夏三七 / 橙子Orange<br>图片对齐算法开源作者：草鱼<br>RunningHub 接入思路参考：小T（PixelRunner / 小T修图助手）</div>
                     </div>
                 </div>
-
-                <button id="btnCloseSplash" class="btn btn-primary splash-close-btn" type="button">进入插件</button>
             </div>
 
             <div class="workspace">
@@ -1329,7 +2098,7 @@ html.global-dropdown-open sp-textarea {
                     <div class="module-hero">
                         <div>
                             <div class="module-title">AI 图像生成工作台</div>
-                            <div class="module-desc">读取 Photoshop 选区，结合提示词和预设生成可回写的修图结果。</div>
+                            <div class="module-desc">直接读取选区、填写提示词并生成。</div>
                         </div>
                         <div class="module-badge">IMG2IMG</div>
                     </div>
@@ -1390,25 +2159,26 @@ html.global-dropdown-open sp-textarea {
                                 <select id="promptPreset"><option value="">-- 选择预设 --</option></select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="imgPrompt">提示词</label>
-                            <textarea id="imgPrompt" class="prompt-textarea" wrap="soft" placeholder="请输入图像描述..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="presetName">预设名称</label>
-                            <input type="text" id="presetName" placeholder="预设名称" style="user-select: text; pointer-events: auto;">
-                        </div>
-                        <div class="form-group preset-actions-row">
-                            <div class="preset-actions">
-                                <button id="btnSavePreset" class="btn btn-secondary">保存预设</button>
-                                <button id="btnDeletePreset" class="btn btn-secondary">删除预设</button>
+                        <div id="standardPromptPresetFields" class="standard-prompt-preset-fields">
+                            <div class="form-group dropdown-hide-while-open preset-dropdown-sensitive">
+                                <label for="imgPrompt">提示词</label>
+                                <textarea id="imgPrompt" class="prompt-textarea" wrap="soft" placeholder="请输入图像描述..."></textarea>
+                            </div>
+                            <div class="form-group dropdown-hide-while-open preset-dropdown-sensitive">
+                                <label for="presetName">预设名称</label>
+                                <input type="text" id="presetName" placeholder="预设名称" style="user-select: text; pointer-events: auto;">
+                            </div>
+                            <div class="form-group preset-actions-row dropdown-hide-while-open preset-dropdown-sensitive">
+                                <div class="preset-actions">
+                                    <button id="btnSavePreset" class="btn btn-secondary">保存预设</button>
+                                    <button id="btnDeletePreset" class="btn btn-secondary">删除预设</button>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="module-card field-stack">
                         <div class="card-title">Photoshop 选区上下文</div>
-                        <div id="selectionInfo" class="info-text">请在Photoshop中使用框选工具选择区域，点击「生成图像」</div>
                         <div id="selectionPreview" class="preview-container">
                             <div id="previewPlaceholder" class="placeholder-text empty-state">预览将显示在这里</div>
                             <img id="previewImage" src="" alt="预览" class="selection-preview-img" style="display: none;">
@@ -1424,7 +2194,6 @@ html.global-dropdown-open sp-textarea {
                                 <div class="reference-slot empty">图4</div>
                                 <div class="reference-slot empty">图5</div>
                             </div>
-                            <div class="info-text">图2-图5会作为额外参考图随主选区一起发送；点击标签可重新抓取该槽位。</div>
                         </div>
                         <div class="btn-row">
                             <button id="btnImg2ImgReadSelection" class="btn btn-secondary">读取选区</button>
@@ -1432,6 +2201,326 @@ html.global-dropdown-open sp-textarea {
                         </div>
                     </div>
                 </div>
+
+                <div id="img2imgTutorial" class="tab-content">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">生图使用教程</div>
+                            <div class="module-desc">把常用步骤单独放在这里，需要时再看，不打断正常生图。</div>
+                        </div>
+                        <div class="module-badge">GUIDE</div>
+                    </div>
+
+                    <div class="module-card">
+                        <div class="btn-row">
+                            <button id="btnBackToImg2ImgWorkspace" class="btn btn-primary" type="button">返回工作台</button>
+                        </div>
+                    </div>
+
+                    <div class="module-card settings-help-card">
+                        <div class="card-title">快速开始</div>
+                        <div class="settings-group">
+                            <button class="settings-group-toggle" type="button" aria-expanded="true">第一次使用前</button>
+                            <div class="settings-group-body">
+                                <div class="info-text">1. 先在设置里填写 GRS API 密钥。</div>
+                                <div class="info-text">2. 如果要用本地 WebUI，也先填写 SD WebUI 地址。</div>
+                                <div class="info-text">3. 保存设置后再回到生图工作台。</div>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <button class="settings-group-toggle" type="button" aria-expanded="true">正常生图 4 步</button>
+                            <div class="settings-group-body">
+                                <div class="info-text">1. 在 Photoshop 中框选需要处理的区域。</div>
+                                <div class="info-text">2. 回到插件点击「读取选区」。</div>
+                                <div class="info-text">3. 选择模型、分辨率、数量并填写提示词。</div>
+                                <div class="info-text">4. 点击「生成图像」，结果会自动回写到当前文档。</div>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <button class="settings-group-toggle" type="button" aria-expanded="true">参考图与预设</button>
+                            <div class="settings-group-body">
+                                <div class="info-text">参考图最多 4 张，会和主选区一起发送。</div>
+                                <div class="info-text">选择预设后会自动填入提示词；保存预设时会连同参考图一起保存。</div>
+                                <div class="info-text">如果要做更复杂的特效提示词，可进入 VFX 应用中心继续编辑。</div>
+                            </div>
+                        </div>
+                        <div class="settings-group">
+                            <button class="settings-group-toggle" type="button" aria-expanded="true">常见问题</button>
+                            <div class="settings-group-body">
+                                <div class="info-text">读取选区失败：确认当前文档已打开，并且真的有选区。</div>
+                                <div class="info-text">生图失败：先检查 GRS API 密钥和网络连接。</div>
+                                <div class="info-text">回图大小不理想：可在设置里调整图片对齐算法。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="apps" class="tab-content">
+                    <div class="module-hero">
+                        <div>
+                            <div class="module-title">小应用</div>
+                            <div class="module-desc">选择应用进入参数配置界面。</div>
+                        </div>
+                    </div>
+
+                    <div id="appsHome" class="field-stack"></div>
+
+                    <div id="vfxAppEditor" class="vfx-app-shell" style="display:none;">
+                        <div class="module-hero vfx-workflow-hero">
+                            <div class="vfx-workflow-summary">
+                                <div class="module-title">VFX 特效</div>
+                                <div class="module-desc">参考图、轨迹、外观参数，直接生成。</div>
+                            </div>
+                            <div class="btn-row">
+                                <button id="btnBackToAppsHome" class="btn btn-secondary" type="button">返回小应用</button>
+                            </div>
+                        </div>
+
+                        <div class="module-card field-stack vfx-step-card vfx-reference-card">
+                            <div class="card-title">参考与轨迹</div>
+                            <div class="reference-panel">
+                                <div class="reference-panel-head">
+                                    <div class="card-title" style="margin:0;">参考图镜像</div>
+                                    <div class="reference-count"><span id="vfxReferenceImageCount">0</span>/4</div>
+                                </div>
+                                <div id="vfxReferenceImageSlots" class="reference-image-slots">
+                                    <div class="reference-slot empty">图2</div>
+                                    <div class="reference-slot empty">图3</div>
+                                    <div class="reference-slot empty">图4</div>
+                                    <div class="reference-slot empty">图5</div>
+                                </div>
+                            </div>
+                            <div class="btn-row vfx-step-actions">
+                                <button id="btnAddReferenceImageVfx" class="btn btn-secondary">添加当前选区为参考图</button>
+                            </div>
+                            <div class="vfx-trajectory-layout">
+                                <div class="form-group settings-card">
+                                    <label for="vfxMotionPathText">轨迹描述</label>
+                                    <input type="text" id="vfxMotionPathText" placeholder="例如：人物周围绕一圈后向右上方拉出" style="width:100%;">
+                                    <div class="vfx-note-strip">
+                                        <div class="vfx-note-pill">先写大方向：绕、穿、扫、拖尾</div>
+                                        <div class="vfx-note-pill">复杂运动再加轨迹图</div>
+                                    </div>
+                                </div>
+                                <div class="form-group settings-card vfx-trajectory-preview-card">
+                                    <label>轨迹参考图</label>
+                                    <div id="vfxTrajectorySlot" class="vfx-trajectory-slot">
+                                        <div class="reference-slot empty">点击下方按钮抓取轨迹图</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="btn-row vfx-trajectory-actions">
+                                <button id="btnCreateVfxLayer" class="btn btn-secondary" type="button">创建轨迹引导层</button>
+                                <button id="btnCaptureTrajectory" class="btn btn-secondary" type="button">读取轨迹图</button>
+                                <button id="btnClearTrajectory" class="btn btn-secondary" type="button">清除轨迹图</button>
+                            </div>
+                        </div>
+
+                        <div class="module-card field-stack vfx-step-card vfx-compact-card">
+                            <div class="card-title">外观参数</div>
+                            <div class="form-group settings-card">
+                                <label for="vfxEffectPreset">特效类型</label>
+                                <select id="vfxEffectPreset">
+                                    <option value="energy-trail">能量拖尾</option>
+                                    <option value="neon-outline">霓虹描边</option>
+                                    <option value="glitch-shards">故障碎片</option>
+                                    <option value="magic-circle">魔法阵</option>
+                                    <option value="light-ribbon">光带丝带</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            <div class="form-group settings-card" id="vfxEffectCustomCell" style="display:none;">
+                                <label for="vfxEffectCustomName">自定义特效名</label>
+                                <input type="text" id="vfxEffectCustomName" placeholder="例如：能量丝带、等离子束、霓虹裂隙" style="width:100%;">
+                                <div class="vfx-input-note">建议输入英文名称，生成时会直接使用你填写的内容。</div>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label for="vfxMaterialPreset">材质质感</label>
+                                <select id="vfxMaterialPreset">
+                                    <option value="plasma">等离子光感</option>
+                                    <option value="glassy">玻璃质光感</option>
+                                    <option value="electric-particles">电流粒子</option>
+                                    <option value="liquid-fire">液态火焰</option>
+                                    <option value="dusty-aura">尘雾光环</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            <div class="form-group settings-card" id="vfxMaterialCustomCell" style="display:none;">
+                                <label for="vfxMaterialCustomName">自定义材质名</label>
+                                <input type="text" id="vfxMaterialCustomName" placeholder="例如：玻璃辉光、液态火焰、金属电弧" style="width:100%;">
+                                <div class="vfx-input-note">建议输入英文材质描述，生成时会直接使用。</div>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label for="vfxColorHex">特效主色</label>
+                                <div class="vfx-pseudo-color-control">
+                                    <div class="vfx-color-picker-stack">
+                                        <div class="vfx-color-preview-row">
+                                            <div id="vfxColorPreview" class="vfx-color-preview-box" aria-hidden="true"></div>
+                                            <input type="text" id="vfxColorHex" class="vfx-color-text" value="#00f0ff" spellcheck="false" autocomplete="off">
+                                            <input type="color" id="vfxColor" class="vfx-hidden-native" value="#00f0ff" tabindex="-1" aria-hidden="true">
+                                        </div>
+                                        <div id="vfxHueRing" class="vfx-hue-strip" tabindex="0" role="slider" aria-label="选择 VFX 色相" aria-valuemin="0" aria-valuemax="360" aria-valuenow="186">
+                                            <span id="vfxHueThumb" class="vfx-hue-thumb"></span>
+                                        </div>
+                                        <div class="vfx-slider-meta"><span>饱和度</span><span id="vfxColorSaturationValue">82%</span></div>
+                                        <input type="range" id="vfxColorSaturation" class="vfx-hidden-native" min="0" max="100" step="1" value="82" tabindex="-1" aria-hidden="true">
+                                        <div class="vfx-pseudo-slider" data-slider-for="vfxColorSaturation" tabindex="0" role="slider" aria-label="调整 VFX 饱和度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="82">
+                                            <div class="vfx-pseudo-slider-track"></div>
+                                            <div class="vfx-pseudo-slider-fill"></div>
+                                            <div class="vfx-pseudo-slider-thumb"></div>
+                                        </div>
+                                        <div class="vfx-slider-meta"><span>明度</span><span id="vfxColorBrightnessValue">100%</span></div>
+                                        <input type="range" id="vfxColorBrightness" class="vfx-hidden-native" min="0" max="100" step="1" value="100" tabindex="-1" aria-hidden="true">
+                                        <div class="vfx-pseudo-slider" data-slider-for="vfxColorBrightness" tabindex="0" role="slider" aria-label="调整 VFX 明度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100">
+                                            <div class="vfx-pseudo-slider-track"></div>
+                                            <div class="vfx-pseudo-slider-fill"></div>
+                                            <div class="vfx-pseudo-slider-thumb"></div>
+                                        </div>
+                                        <div class="info-text">拖动色相、饱和度、明度，或者直接输入 Hex 色值。</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label for="vfxParticleText">粒子描述</label>
+                                <input type="text" id="vfxParticleText" placeholder="例如：细碎火星向外飞散，尾部带发光颗粒" style="width:100%;">
+                                <div class="vfx-input-note">可留空，生成时会自动补英文粒子细节。</div>
+                            </div>
+                            <div class="form-group settings-card vfx-pseudo-choice-card">
+                                <label class="checkbox-row pseudo-checkbox-row"><input type="checkbox" id="vfxSmokeEnabled" class="vfx-hidden-native"> <span class="pseudo-choice-dot" aria-hidden="true"></span><span>启用烟雾效果</span></label>
+                                <div class="vfx-input-note">烟雾适合加强体积感，但不建议一开始就开得太重。</div>
+                            </div>
+                            <div class="form-group settings-card" id="vfxSmokeTextCell" style="display:none;">
+                                <label for="vfxSmokeText">烟雾描述</label>
+                                <input type="text" id="vfxSmokeText" placeholder="例如：尾部薄雾、局部翻卷烟丝、边缘淡烟" style="width:100%;">
+                                <div class="vfx-input-note">建议输入英文烟雾描述；如果留空，会自动补英文默认烟雾效果。</div>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label>颜色辅助</label>
+                                <div class="btn-row vfx-step-actions">
+                                    <button id="btnPickPsForeground" class="btn btn-secondary" type="button">吸取画面主色</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="module-card field-stack vfx-step-card vfx-compact-card">
+                            <div class="card-title">生成与预设</div>
+                            <div class="form-group settings-card">
+                                <label for="vfxPresetCategory">预设分组</label>
+                                <select id="vfxPresetCategory"><option value="">-- 选择分类 --</option></select>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label for="vfxPromptPreset">预设选择</label>
+                                <select id="vfxPromptPreset"><option value="">-- 选择预设 --</option></select>
+                            </div>
+                            <div class="form-group settings-card">
+                                <label>提示词预览</label>
+                                <div id="vfxPromptPreview" class="info-text vfx-prompt-preview-text">提示词将在配置后显示在这里</div>
+                            </div>
+                            <div class="btn-row vfx-step-actions">
+                                <button id="btnGenerateVfxApp" class="btn btn-primary">生成图像</button>
+                                <button id="btnGoToImg2Img" class="btn btn-secondary" type="button">前往生图页面</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="appEditor" class="app-editor-shell" style="display:none;">
+                        <div class="module-hero app-editor-hero">
+                            <div>
+                                <div class="module-title" id="appEditorTitle">应用</div>
+                                <div class="module-desc" id="appEditorDesc"></div>
+                            </div>
+                            <div class="btn-row">
+                                <button id="btnBackToGenericAppHome" class="btn btn-secondary" type="button">返回小应用</button>
+                            </div>
+                        </div>
+                        <div id="appEditorBody" class="app-editor-body"></div>
+                    </div>
+                </div>
+
+                <div id="vfxTutorial" class="tab-content">
+                        <div class="module-hero">
+                            <div>
+                                <div class="module-title">VFX 使用教程</div>
+                                <div class="module-desc">把说明单独放在这里，工作界面只保留真正要操作的内容。</div>
+                            </div>
+                            <div class="module-badge">VFX GUIDE</div>
+                        </div>
+
+                        <div class="module-card">
+                            <div class="btn-row">
+                                <button id="btnBackToVfxWorkspace" class="btn btn-primary" type="button">返回 VFX 工作台</button>
+                            </div>
+                        </div>
+
+                        <div class="module-card settings-help-card">
+                            <div class="card-title">VFX 完整使用教程</div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">1. VFX 是什么</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">VFX 是在原图主体不大改的前提下，给人物或物体外侧叠加“能量、霓虹、魔法、故障、光带”这一类视觉特效。</div>
+                                    <div class="info-text">它更像“给现有画面加电影级特效层”，不是重画人物，也不是把原图整体换风格。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">2. 为什么用 VFX</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">普通提示词容易把人物本身也一起改掉，VFX 工作台会把重点放在“保留主体 + 只增强特效”。</div>
+                                    <div class="info-text">这样更适合做人像海报、游戏感包装、动作拖尾、法阵、电流、光带、武器能量这些需要贴着主体走的效果。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">3. 标准操作流程</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">第一步：先在 Photoshop 框住主主体或要加特效的位置。</div>
+                                    <div class="info-text">第二步：如果有风格参考、材质参考、局部脸部参考，就把它们逐张加到参考图区。</div>
+                                    <div class="info-text">第三步：填写轨迹描述；如果运动路径复杂，再单独画一张轨迹图并读取进来。</div>
+                                    <div class="info-text">第四步：设置特效类型、材质、主色、饱和度、明度、粒子和烟雾。</div>
+                                    <div class="info-text">第五步：先点“生成 VFX 提示词”检查方向，再点“直接生成 VFX”出图。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">4. 当前界面每一块怎么用</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">参考与轨迹：上半部分是参考图镜像，用来给 AI 补风格、材质、局部细节；轨迹区用来描述或读取运动方向。</div>
+                                    <div class="info-text">外观参数：特效类型决定大类，材质质感决定发光观感，主色/饱和度/明度控制颜色气质，粒子和烟雾负责丰富层次。</div>
+                                    <div class="info-text">生成与预设：可以把一整套 VFX 配置保存下来，下次直接从伪下拉里选回同款效果。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">5. 颜色怎么调</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">色相决定颜色类别，比如蓝、青、紫、红。</div>
+                                    <div class="info-text">饱和度越高，颜色越“炸”、越纯；越低越偏克制、偏灰、偏高级。</div>
+                                    <div class="info-text">明度越高，特效越亮更通透；越低越压暗，更适合夜景、故障感和能量残影。</div>
+                                    <div class="info-text">建议先吸取画面主色，再用饱和度和明度做微调，会比直接乱选颜色更自然。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">6. 什么时候要用轨迹图</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">如果只是“绕一圈”“向上拉出”“从手里爆开”，文字轨迹通常就够了。</div>
+                                    <div class="info-text">如果你要的是复杂弧线、穿插、回旋、折返、包裹身体多个部位，建议先创建轨迹引导层，自己画一条红色轨迹，再读取轨迹图。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">7. 常见搭配建议</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">能量拖尾 + 等离子光感：适合动作人物、运动瞬间、冲刺感。</div>
+                                    <div class="info-text">霓虹描边 + 玻璃质光感：适合潮流海报、科技边缘光。</div>
+                                    <div class="info-text">故障碎片 + 电流粒子：适合赛博、电子屏破裂、数码干扰感。</div>
+                                    <div class="info-text">魔法阵 + 尘雾光环：适合法术、召唤、悬浮类画面。</div>
+                                </div>
+                            </div>
+                            <div class="settings-group">
+                                <button class="settings-group-toggle" type="button" aria-expanded="true">8. 避坑提示</button>
+                                <div class="settings-group-body">
+                                    <div class="info-text">一开始不要把烟雾开太重，不然主体边缘容易脏。</div>
+                                    <div class="info-text">颜色太亮又太饱和时，特效会显得假，尤其在人像脸部附近。</div>
+                                    <div class="info-text">如果主体被改坏，通常是参考不够明确，或者轨迹/粒子写得太夸张，可以先收敛再生成一次。</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <div id="chat" class="tab-content">
                     <div class="module-hero">
@@ -1481,7 +2570,7 @@ html.global-dropdown-open sp-textarea {
 
                 <div id="webui" class="tab-content">
                     <div class="module-hero"><div><div class="module-title">SD WebUI 工作流</div><div class="module-desc">连接本地 WebUI，统一管理模型、Lora、提示词和生成参数。</div></div><div class="module-badge">WEBUI</div></div>
-                    <div class="module-card"><div class="settings-save-wrap"><button id="btnWebUIGenerate" class="btn btn-success">一键生成</button><button id="btnWebUIImg2Img" class="btn btn-primary">刷新</button></div></div>
+                    <div class="module-card"><div class="settings-save-wrap"><button id="btnBackToAppsHomeFromWebui" class="btn btn-secondary" type="button">返回小应用</button><button id="btnWebUIGenerate" class="btn btn-success">一键生成</button><button id="btnWebUIImg2Img" class="btn btn-primary">刷新</button></div></div>
                     <div class="module-card field-stack">
                         <div class="card-title">模型资源</div>
                         <div class="form-group settings-card"><label for="sdModel">模型列表</label><select id="sdModel"><option value="">-- 选择模型 --</option></select><div class="info-text">选择SD WebUI的Stable-diffusion模型</div></div>
@@ -1519,10 +2608,9 @@ html.global-dropdown-open sp-textarea {
                 <div id="settings" class="tab-content settings-redesigned">
                     <div class="module-hero">
                         <div>
-                            <div class="module-title">连接与输出设置</div>
-                            <div class="module-desc">先配置 GRS 密钥，再按需要连接本地 WebUI 和选择回写对齐方式。</div>
+                            <div class="module-title">设置</div>
+                            <div class="module-desc">必要配置和应用导入都在这里。</div>
                         </div>
-                        <div class="module-badge">CONFIG</div>
                     </div>
 
                     <div class="module-card settings-priority-card">
@@ -1614,6 +2702,68 @@ html.global-dropdown-open sp-textarea {
                                         <option value="force1x1">1:1 强制无偏移</option>
                                     </select>
                                     <div class="info-text">普通对齐不会改变画布大小；需要把回图缩放到选区时再选择缩放图层到选区。</div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
+                        <section class="settings-group" data-group="runninghub">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">5. RunningHub 应用</button>
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label for="runninghubApiKey">RunningHub API Key</label>
+                                    <input type="password" id="runninghubApiKey" placeholder="请输入 RunningHub API Key">
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="runninghubAppIdInput">应用 ID / 应用链接</label>
+                                    <input type="text" id="runninghubAppIdInput" placeholder="输入 appId，或粘贴 RunningHub 应用链接">
+                                    <div class="info-text">支持直接输入 appId，也支持粘贴应用 URL 自动提取。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <div class="btn-row">
+                                        <button id="btnParseRunninghubApp" class="btn btn-secondary" type="button">解析应用</button>
+                                        <button id="btnSaveRunninghubParsedApp" class="btn btn-secondary" type="button" disabled>保存应用</button>
+                                    </div>
+                                    <div id="runninghubParsedAppInfo" class="info-text">未解析应用</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label>已导入应用</label>
+                                    <div id="runninghubAppList" class="field-stack">
+                                        <div class="info-text">暂无导入应用</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div class="module-card settings-priority-card">
+                        <section class="settings-group" data-group="advanced">
+                            <button type="button" class="settings-group-toggle" aria-expanded="true">6. 高级设置</button>
+                            <div class="settings-group-body">
+                                <div class="form-group settings-card">
+                                    <label for="advancedPollInterval">轮询间隔（毫秒）</label>
+                                    <input type="number" id="advancedPollInterval" min="500" max="60000" step="500" placeholder="默认 3000">
+                                    <div class="info-text">用于 RunningHub 等异步任务轮询，数值越小刷新越频繁。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="advancedTimeout">请求超时（毫秒）</label>
+                                    <input type="number" id="advancedTimeout" min="5000" max="120000" step="1000" placeholder="默认 30000">
+                                    <div class="info-text">用于接口请求超时控制，适合网络较慢时适当调大。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="advancedMaxConcurrent">最大并发任务数</label>
+                                    <input type="number" id="advancedMaxConcurrent" min="1" max="5" step="1" placeholder="默认 1">
+                                    <div class="info-text">限制同一时间提交的后台任务数量，避免过载。</div>
+                                </div>
+                                <div class="form-group settings-card">
+                                    <label for="advancedAiOptimizeAppId">AI 优化应用 ID</label>
+                                    <input type="text" id="advancedAiOptimizeAppId" placeholder="留空使用内置默认值">
+                                    <div class="btn-row" style="margin-top:10px;">
+                                        <button id="btnResetAiOptimizeAppId" class="btn btn-secondary" type="button">恢复默认</button>
+                                        <button id="btnRefreshAccountSummary" class="btn btn-secondary" type="button">刷新账户状态</button>
+                                    </div>
+                                    <div id="accountSummaryInfo" class="info-text">点击刷新账户状态查看 RunningHub API 配置与本地应用数量。</div>
                                 </div>
                             </div>
                         </section>

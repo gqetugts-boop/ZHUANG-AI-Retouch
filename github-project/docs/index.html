@@ -382,7 +382,7 @@
     <div class="hero-card">
      <div class="app-preview">
       <div class="preview-top"><span class="preview-dot"></span><span class="preview-dot"></span><span class="preview-dot"></span></div>
-      <div class="preview-title"><strong>ZHUANG-AI 修图插件</strong><span class="badge">1.3.8 正式版</span></div>
+      <div class="preview-title"><strong>ZHUANG-AI 修图插件</strong><span class="badge">1.4.1 正式版</span></div>
       <div class="preview-block">
        <div class="preview-line mid"></div>
        <div class="preview-line"></div>
@@ -414,8 +414,8 @@
      <div class="project-card">
       <div class="project-icon"><img src="assets/icon_D.png" alt="ZHUANG-AI 图标"></div>
       <div>
-       <h3>ZHUANG-AI 1.3.8 正式版</h3>
-       <p>ZHUANG-AI 是当前已经完成的 Photoshop 原生 UXP 插件，定位是把 AI 生图和文字对话真正放进修图流程里。核心优势是接入 gptimagine-2 与 Nano Banana 全系列，同时接入 Gemini Gpt全系列文字模型；配合 Photoshop 选区、多参考图、预设、批处理、WebUI 和回图对齐，形成完整的 AI 修图闭环。</p>
+       <h3>ZHUANG-AI 1.4.1 正式版</h3>
+       <p>ZHUANG-AI 是当前已经完成的 Photoshop 原生 UXP 插件，定位是把 AI 生图、文字对话和小应用真正放进修图流程里。1.4.1 新增 VFX 特效、合成辅助器、特效迁移、AI超清、SD WebUI 和 RunningHub 应用工作区；配合 Photoshop 选区、多参考图、预设、批处理和回图对齐，形成完整的 AI 修图闭环。</p>
        <div class="meta-row">
         <span class="pill">已完成</span>
         <span class="pill">Photoshop UXP插件</span>
@@ -424,9 +424,12 @@
         <span class="pill">Gpt全系列</span>
         <span class="pill">Gemini 全系列</span>
         <span class="pill">4 张参考图</span>
+        <span class="pill">VFX 小应用</span>
+        <span class="pill">AI超清</span>
+        <span class="pill">RunningHub</span>
        </div>
        <div class="hero-actions" style="margin-top:0">
-        <a class="btn primary" href="downloads/ZHUANG-AI-1.3.8.zip">下载插件</a>
+        <a class="btn primary" href="downloads/ZHUANG-AI-1.4.1.zip">下载插件</a>
         <a class="btn" href="tutorial.html">安装教程</a>
         <a class="btn" href="#contact">加入交流群</a>
        </div>
@@ -493,7 +496,7 @@
      <div class="card"><div class="icon-chip">03</div><h3>GRS 图像接口</h3><p>支持 Nano Banana-pro、Nano Banana-fast、Nano Banana 2、gptimagine-2 等图生图模型入口。</p></div>
      <div class="card"><div class="icon-chip">04</div><h3>GRS 对话分析</h3><p>统一使用 GRS 对话模型，支持文字问答，也可以读取 Photoshop 选区进行图文分析和修图建议。</p></div>
      <div class="card"><div class="icon-chip">05</div><h3>预设与批处理</h3><p>提示词预设可保存参考图；批处理任务会记住添加时的选区和参考图上下文，适合连续生成。</p></div>
-     <div class="card"><div class="icon-chip">06</div><h3>SD WebUI 工作流</h3><p>连接本地 WebUI，读取模型和 Lora，集中管理正向、反向提示词、采样方法、步数和重绘幅度。</p></div>
+     <div class="card"><div class="icon-chip">06</div><h3>应用/小应用工作区</h3><p>集中使用 VFX 特效、合成辅助器、特效迁移、AI超清、SD WebUI 和 RunningHub 应用；所有小应用默认自然比例生成。</p></div>
     </div>
    </div>
   </section>
@@ -519,10 +522,10 @@
     <div class="download-box">
      <div>
       <div class="section-kicker">Download</div>
-      <h2 style="margin-bottom:6px">下载 ZHUANG-AI 1.3.8</h2>
-      <p>下载后解压，把整个 <strong>ZHUANG-AI 1.3.8</strong> 文件夹复制到 Photoshop Plug-ins 目录，或使用 UXP Developer Tool 加载里面的 manifest.json。安装和使用遇到问题，可加入插件交流群：<strong>1103212650</strong>。</p>
+      <h2 style="margin-bottom:6px">下载 ZHUANG-AI 1.4.1</h2>
+      <p>下载后解压，把整个 <strong>ZHUANG-AI 1.4.1</strong> 文件夹复制到 Photoshop Plug-ins 目录，或使用 UXP Developer Tool 加载里面的 manifest.json。安装和使用遇到问题，可加入插件交流群：<strong>1103212650</strong>。</p>
      </div>
-     <a class="btn primary" href="downloads/ZHUANG-AI-1.3.8.zip">立即下载</a>
+     <a class="btn primary" href="downloads/ZHUANG-AI-1.4.1.zip">立即下载</a>
     </div>
      <div class="download-box" style="margin-top:14px">
     <div>
@@ -550,12 +553,14 @@
     </div>
     <div class="timeline">
      <div class="timeline-item">
-      <strong>1.3.8 正式版（2026-05-16）</strong>
+      <strong>1.4.1 正式版（2026-05-16）</strong>
       <ul>
-       <li>修复 GRS 图生图轮询成功但无图时被误判为完成的问题，避免继续报“无法从响应中提取图像”。</li>
-       <li>补强任务 ID 与结果提取兼容范围，适配更多返回结构并改进失败原因显示。</li>
-       <li>修复预设在 UXP 文件系统尚未就绪时被提前缓存为空的问题，首次启动即可正常读取 yushe.json。</li>
-       <li>保留批处理任务的参考图上下文，并同步教程、发布包与官网版本号到 1.3.8。</li>
+       <li>新增应用/小应用工作区：VFX 特效、合成辅助器、特效迁移、AI超清、SD WebUI 和 RunningHub 应用集中管理。</li>
+       <li>合成辅助器支持用原图和专用提示词生成深度图、法线图、分割图、雾效遮罩、高光反射图与边缘线稿。</li>
+       <li>特效迁移提供“先分析再迁移”和“原图 + 特效图直接参考迁移”两种方案。</li>
+       <li>AI超清支持 2x / 3x / 4x 自动切片，使用 Nano Banana 2 4K 进行 tile 级超清放大。</li>
+       <li>小应用生成默认自然比例，不强制 1:1 或固定区域大小；结果图层默认正常混合模式。</li>
+       <li>修复 FileReader、参考图预览、应用伪下拉框遮挡输入框等 UXP 体验问题。</li>
       </ul>
      </div>
      <div class="timeline-item">
